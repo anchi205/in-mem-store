@@ -8,17 +8,23 @@ Install dependencies:
 
 `sudo apt-get install cmake libtbb2-dev libaio-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev librocksdb-dev liblmdb-dev libwiredtiger-dev liburing-dev`
 
-`mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && make -j`
+`mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && make -j && cd ..`
+
+### Create a 10GB file named 'leanstore_ssd_file'
+`dd if=/dev/zero of=leanstore_ssd_file bs=1G count=10`
+
+### Give permissions
+`chmod 777 ./leanstore_ssd_file`
 
 ## Benchmark Examples
 ### TPC-C
 
-`build/frontend/tpcc --tpcc_warehouse_count=100 --notpcc_warehouse_affinity --ssd_path=./ssd_block_device_or_file --worker_threads=120 --pp_threads=4 --dram_gib=240 --csv_path=./log --free_pct=1 --contention_split --xmerge --print_tx_console --run_for_seconds=60 --isolation_level=si`
+`sudo build/frontend/tpcc --ssd_path=./leanstore_ssd_file --worker_threads=16 --pp_threads=4 --dram_gib=8 --tpcc_warehouse_count=100 --notpcc_warehouse_affinity --csv_path=./log --free_pct=1 --contention_split --xmerge --print_tx_console --run_for_seconds=60 --isolation_level=si`
 
 Check `build/frontend/tpcc --help` for other options.
 
 ### YCSB
-`build/frontend/tpcc --ycsb_read_ratio=50 --target_gib=10 --ssd_path=./ssd_block_device_or_file --worker_threads=120 --pp_threads=4 --dram_gib=5 --csv_path=./log --free_pct=1 --contention_split --xmerge --print_tx_console --run_for_seconds=60 --isolation_level=si`
+`sudo build/frontend/tpcc --target_gib=10 --ssd_path=./leanstore_ssd_file --worker_threads=16 --pp_threads=4 --dram_gib=5 --csv_path=./log --free_pct=1 --contention_split --xmerge --print_tx_console --run_for_seconds=60 --isolation_level=si`
 check `build/frontend/ycsb --help` for other options
 
 ## Implement Your Workload
