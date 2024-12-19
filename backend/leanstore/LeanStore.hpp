@@ -62,6 +62,8 @@ class LeanStore
    storage::btree::BTreeLL& retrieveBTreeLL(string name) { return btrees_ll[name]; }
    storage::btree::BTreeVI& registerBTreeVI(string name, const storage::btree::BTreeLL::Config config);
    storage::btree::BTreeVI& retrieveBTreeVI(string name)
+   // to-be-done
+   // write a register and retrieve here for in mem stuff so that we can use it
    {
       auto& btree_vi = btrees_vi[name];
       if (btree_vi.graveyard == nullptr) {

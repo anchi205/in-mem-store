@@ -33,8 +33,12 @@ struct LeanStoreAdapter : Adapter<Record> {
             btree = &db.registerBTreeLL(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
          }
       }
+      // to-be-done 
+      // write one more adapter here for in mem store and and change btree to generic name so that it can be used by everyone
+
    }
    // -------------------------------------------------------------------------------------
+   // to-be-done
    void printTreeHeight() { cout << name << " height = " << btree->getHeight() << endl; }
    // -------------------------------------------------------------------------------------
    void scanDesc(const typename Record::Key& key,
@@ -65,6 +69,8 @@ struct LeanStoreAdapter : Adapter<Record> {
       u8 folded_key[Record::maxFoldLength()];
       u16 folded_key_len = Record::foldKey(folded_key, key);
       const OP_RESULT res = btree->insert(folded_key, folded_key_len, (u8*)(&record), sizeof(Record));
+      // to-be-done
+      // extend the insert and other functionanlity for in mem store also
       ensure(res == leanstore::OP_RESULT::OK || res == leanstore::OP_RESULT::ABORT_TX);
       if (res == leanstore::OP_RESULT::ABORT_TX) {
          cr::Worker::my().abortTX();
@@ -100,6 +106,7 @@ struct LeanStoreAdapter : Adapter<Record> {
          update_descriptor.slots[0].length = sizeof(Record);
       }
       // -------------------------------------------------------------------------------------
+      // to-be-done
       const OP_RESULT res = btree->updateSameSizeInPlace(
           folded_key, folded_key_len,
           [&](u8* payload, u16 payload_length) {
@@ -119,6 +126,7 @@ struct LeanStoreAdapter : Adapter<Record> {
    {
       u8 folded_key[Record::maxFoldLength()];
       u16 folded_key_len = Record::foldKey(folded_key, key);
+      // to-be-done
       const auto res = btree->remove(folded_key, folded_key_len);
       if (res == leanstore::OP_RESULT::ABORT_TX) {
          cr::Worker::my().abortTX();
@@ -132,6 +140,7 @@ struct LeanStoreAdapter : Adapter<Record> {
    {
       u8 folded_key[Record::maxFoldLength()];
       u16 folded_key_len = Record::foldKey(folded_key, key);
+      // to-be-done
       OP_RESULT ret = btree->scanAsc(
           folded_key, folded_key_len,
           [&](const u8* key, u16 key_length, const u8* payload, u16 payload_length) {
@@ -156,6 +165,7 @@ struct LeanStoreAdapter : Adapter<Record> {
       u8 folded_key[Record::maxFoldLength()];
       u16 folded_key_len = Record::foldKey(folded_key, key);
       Field local_f;
+      // to-be-done
       const OP_RESULT res = btree->lookup(folded_key, folded_key_len, [&](const u8* payload, u16 payload_length) {
          static_cast<void>(payload_length);
          Record& typed_payload = *const_cast<Record*>(reinterpret_cast<const Record*>(payload));
@@ -168,5 +178,6 @@ struct LeanStoreAdapter : Adapter<Record> {
       return local_f;
    }
    // -------------------------------------------------------------------------------------
+   // to-be-done
    u64 count() { return btree->countEntries(); }
 };
