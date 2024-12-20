@@ -90,6 +90,11 @@ class Inmem : public KVInterface
    static void deserialize(void* btree_object, std::unordered_map<std::string, std::string> serialized);
    static DTRegistry::DTMeta getMeta();
    // -------------------------------------------------------------------------------------
+   struct Config {
+      bool enable_wal = true;
+      bool use_bulk_insert = false;
+   };
+   // -------------------------------------------------------------------------------------
   protected:
    // WAL / CC
    static void generateDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);

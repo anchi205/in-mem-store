@@ -247,7 +247,7 @@ storage::btree::BTreeLL& LeanStore::registerBTreeLL(string name, storage::btree:
    return btree;
 }
 // -------------------------------------------------------------------------------------
-storage::btree::BTreeLL& LeanStore::registerInmem(string name, storage::btree::BTreeGeneric::Config config)
+storage::inmem::Inmem& LeanStore::registerInmem(string name, storage::inmem::Inmem::Config config)
 {
    assert(inmems.find(name) == inmems.end());
    auto& inmem = inmems[name];
@@ -259,7 +259,7 @@ storage::btree::BTreeLL& LeanStore::registerInmem(string name, storage::btree::B
    return inmem;
 }
 // -------------------------------------------------------------------------------------
-storage::btree::BTreeLL& LeanStore::retrieveInmem(string name)
+storage::inmem::Inmem& LeanStore::retrieveInmem(string name)
 {
    return inmems[name];
 }

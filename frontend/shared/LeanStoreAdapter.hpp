@@ -38,9 +38,6 @@ struct LeanStoreAdapter : Adapter<Record> {
       } else {
          btree = &db.registerInmem(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
       }
-      
-      // to-be-done 
-      // write one more adapter here for in mem store and and change btree to generic name so that it can be used by everyone
 
    }
    // -------------------------------------------------------------------------------------
