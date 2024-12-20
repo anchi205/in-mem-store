@@ -249,13 +249,20 @@ storage::btree::BTreeLL& LeanStore::registerBTreeLL(string name, storage::btree:
 // -------------------------------------------------------------------------------------
 storage::btree::BTreeLL& LeanStore::registerInmem(string name, storage::btree::BTreeGeneric::Config config)
 {
-   assert(btrees_ll.find(name) == btrees_ll.end());
-   auto& btree = btrees_ll[name];
-   DTID dtid = DTRegistry::global_dt_registry.registerDatastructureInstance(0, reinterpret_cast<void*>(&btree), name);
-   btree.create(dtid, config);
-   return btree;
+   assert(inmems.find(name) == inmems.end());
+   auto& inmem = inmems[name];
+   DTID dtid = DTRegistry::global_dt_registry.registerDatastructureInstance(0, reinterpret_cast<void*>(&inmem), name);
+   // ************** // inmem.create(dtid, config);
+   // to-be-done
+   // this function doesn't exist in class def
+   // either make it child class or implement the logic seperately
+   return inmem;
 }
-
+// -------------------------------------------------------------------------------------
+storage::btree::BTreeLL& LeanStore::retrieveInmem(string name)
+{
+   return inmems[name];
+}
 // -------------------------------------------------------------------------------------
 storage::btree::BTreeVI& LeanStore::registerBTreeVI(string name, storage::btree::BTreeLL::Config config)
 {
