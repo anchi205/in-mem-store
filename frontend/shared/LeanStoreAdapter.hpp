@@ -20,19 +20,25 @@ struct LeanStoreAdapter : Adapter<Record> {
    }
    LeanStoreAdapter(LeanStore& db, string name) : name(name)
    {
-      if (FLAGS_vi) {
-         if (FLAGS_recover) {
-            btree = &db.retrieveBTreeVI(name);
-         } else {
-            btree = &db.registerBTreeVI(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
-         }
+      // if (FLAGS_vi) {
+      //    if (FLAGS_recover) {
+      //       btree = &db.retrieveBTreeVI(name);
+      //    } else {
+      //       btree = &db.registerBTreeVI(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
+      //    }
+      // } else {
+      //    if (FLAGS_recover) {
+      //       btree = &db.retrieveBTreeLL(name);
+      //    } else {
+      //       btree = &db.registerBTreeLL(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
+      //    }
+      // }
+      if (FLAGS_recover) {
+         btree = &db.retrieveInmem(name);
       } else {
-         if (FLAGS_recover) {
-            btree = &db.retrieveBTreeLL(name);
-         } else {
-            btree = &db.registerBTreeLL(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
-         }
+         btree = &db.registerInmem(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
       }
+      
       // to-be-done 
       // write one more adapter here for in mem store and and change btree to generic name so that it can be used by everyone
 

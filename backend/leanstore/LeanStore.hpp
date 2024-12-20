@@ -24,6 +24,7 @@ class LeanStore
    // Poor man catalog
    std::unordered_map<string, storage::btree::BTreeLL> btrees_ll;
    std::unordered_map<string, storage::btree::BTreeVI> btrees_vi;
+   std::unordered_map<string, storage::btree::BTreeLL> inmems;
    // -------------------------------------------------------------------------------------
    s32 ssd_fd;
    // -------------------------------------------------------------------------------------
@@ -60,6 +61,8 @@ class LeanStore
    // -------------------------------------------------------------------------------------
    storage::btree::BTreeLL& registerBTreeLL(string name, const storage::btree::BTreeLL::Config config);
    storage::btree::BTreeLL& retrieveBTreeLL(string name) { return btrees_ll[name]; }
+   storage::btree::BTreeLL& registerInmem(string name, const storage::btree::BTreeLL::Config config);
+   storage::btree::BTreeLL& retrieveInmem(string name) { return inmems[name]; }
    storage::btree::BTreeVI& registerBTreeVI(string name, const storage::btree::BTreeLL::Config config);
    storage::btree::BTreeVI& retrieveBTreeVI(string name)
    // to-be-done

@@ -21,3 +21,4 @@ paper*build/
 leanstire_ssd_file
 .vscode/
 leanstore_ssd_file
+store/

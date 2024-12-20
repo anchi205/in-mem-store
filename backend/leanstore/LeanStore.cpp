@@ -246,6 +246,15 @@ storage::btree::BTreeLL& LeanStore::registerBTreeLL(string name, storage::btree:
    btree.create(dtid, config);
    return btree;
 }
+// -------------------------------------------------------------------------------------
+storage::btree::BTreeLL& LeanStore::registerInmem(string name, storage::btree::BTreeGeneric::Config config)
+{
+   assert(btrees_ll.find(name) == btrees_ll.end());
+   auto& btree = btrees_ll[name];
+   DTID dtid = DTRegistry::global_dt_registry.registerDatastructureInstance(0, reinterpret_cast<void*>(&btree), name);
+   btree.create(dtid, config);
+   return btree;
+}
 
 // -------------------------------------------------------------------------------------
 storage::btree::BTreeVI& LeanStore::registerBTreeVI(string name, storage::btree::BTreeLL::Config config)
