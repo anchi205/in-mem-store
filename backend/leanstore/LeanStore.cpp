@@ -259,10 +259,10 @@ storage::inmem::Inmem& LeanStore::registerInmem(string name, storage::inmem::Inm
    return inmem;
 }
 // -------------------------------------------------------------------------------------
-storage::inmem::Inmem& LeanStore::retrieveInmem(string name)
-{
-   return inmems[name];
-}
+// storage::inmem::Inmem& LeanStore::retrieveInmem(string name)
+// {
+//    return inmems[name];
+// }
 // -------------------------------------------------------------------------------------
 storage::btree::BTreeVI& LeanStore::registerBTreeVI(string name, storage::btree::BTreeLL::Config config)
 {

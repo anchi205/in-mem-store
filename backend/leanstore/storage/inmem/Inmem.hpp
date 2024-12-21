@@ -52,6 +52,35 @@ namespace inmem
 class Inmem : public KVInterface
 {
   public:
+   // struct WALBeforeAfterImage : WALEntry {
+   //    u16 image_size;
+   //    u8 payload[];
+   // };
+   // struct WALAfterImage : WALEntry {
+   //    u16 image_size;
+   //    u8 payload[];
+   // };
+   // struct WALInsert : WALEntry {
+   //    u16 key_length;
+   //    u16 value_length;
+   //    u8 payload[];
+   // };
+   // struct WALUpdate : WALEntry {
+   //    u16 key_length;
+   //    u16 delta_length;
+   //    u8 payload[];
+   // };
+   // struct WALRemove : WALEntry {
+   //    u16 key_length;
+   //    u16 value_length;
+   //    u8 payload[];
+   // };
+   struct Config {
+      bool enable_wal = true;
+      bool use_bulk_insert = false;
+   };
+   // -------------------------------------------------------------------------------------
+   Inmem() = default;
    // -------------------------------------------------------------------------------------
    virtual OP_RESULT lookup(u8* key, u16 key_length, std::function<void(const u8*, u16)> payload_callback) ;
    virtual OP_RESULT insert(u8* key, u16 key_length, u8* value, u16 value_length) ;
@@ -69,38 +98,33 @@ class Inmem : public KVInterface
                               std::function<bool(const u8* key, u16 key_length, const u8* value, u16 value_length)>,
                               std::function<void()>) ;
    // -------------------------------------------------------------------------------------
-   virtual OP_RESULT prefixLookup(u8* key, u16 key_length, std::function<void(const u8*, u16, const u8*, u16)> payload_callback) ;
-   virtual OP_RESULT prefixLookupForPrev(u8* key, u16 key_length, std::function<void(const u8*, u16, const u8*, u16)> payload_callback) ;
-   virtual OP_RESULT append(std::function<void(u8*)>, u16, std::function<void(u8*)>, u16, std::unique_ptr<u8[]>&) ;
-   virtual OP_RESULT rangeRemove(u8* start_key, u16 start_key_length, u8* end_key, u16 end_key_length, bool page_used) ;
+   virtual OP_RESULT prefixLookup(u8* key, u16 key_length, std::function<void(const u8*, u16, const u8*, u16)> payload_callback) override;
+   virtual OP_RESULT prefixLookupForPrev(u8* key, u16 key_length, std::function<void(const u8*, u16, const u8*, u16)> payload_callback) override;
+   virtual OP_RESULT append(std::function<void(u8*)>, u16, std::function<void(u8*)>, u16, std::unique_ptr<u8[]>&) override;
+   virtual OP_RESULT rangeRemove(u8* start_key, u16 start_key_length, u8* end_key, u16 end_key_length, bool page_used) override;
    // -------------------------------------------------------------------------------------
-   bool isRangeSurelyEmpty(Slice start_key, Slice end_key);
+   // bool isRangeSurelyEmpty(Slice start_key, Slice end_key);
    // -------------------------------------------------------------------------------------
-   virtual u64 countPages() ;
-   virtual u64 countEntries() ;
-   virtual u64 getHeight() ;
+   virtual u64 countPages() override;
+   virtual u64 countEntries() override;
+   virtual u64 getHeight() override;
    // -------------------------------------------------------------------------------------
-   static SpaceCheckResult checkSpaceUtilization(void* btree_object, BufferFrame& bf);
-   static ParentSwipHandler findParent(void* btree_object, BufferFrame& to_find);
-   static void undo(void* btree_object, const u8* wal_entry_ptr, const u64 tts);
-   static void todo(void* btree_object, const u8* entry_ptr, const u64 version_worker_id, const u64 tx_id, const bool called_before);
-   static void unlock(void* btree_object, const u8* entry_ptr);
-   static void checkpoint(void*, BufferFrame& bf, u8* dest);
-   static std::unordered_map<std::string, std::string> serialize(void* btree_object);
-   static void deserialize(void* btree_object, std::unordered_map<std::string, std::string> serialized);
-   static DTRegistry::DTMeta getMeta();
+   // static SpaceCheckResult checkSpaceUtilization(void* btree_object, BufferFrame& bf);
+   // static ParentSwipHandler findParent(void* btree_object, BufferFrame& to_find);
+   // static void undo(void* btree_object, const u8* wal_entry_ptr, const u64 tts);
+   // static void todo(void* btree_object, const u8* entry_ptr, const u64 version_worker_id, const u64 tx_id, const bool called_before);
+   // static void unlock(void* btree_object, const u8* entry_ptr);
+   // static void checkpoint(void*, BufferFrame& bf, u8* dest);
+   // static std::unordered_map<std::string, std::string> serialize(void* btree_object);
+   // static void deserialize(void* btree_object, std::unordered_map<std::string, std::string> serialized);
+   // static DTRegistry::DTMeta getMeta();
    // -------------------------------------------------------------------------------------
-   struct Config {
-      bool enable_wal = true;
-      bool use_bulk_insert = false;
-   };
-   // -------------------------------------------------------------------------------------
-  protected:
-   // WAL / CC
-   static void generateDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);
-   static void applyDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);
-   static void generateXORDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);
-   static void applyXORDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);
+//   protected:
+//    // WAL / CC
+//    static void generateDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);
+//    static void applyDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);
+//    static void generateXORDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);
+//    static void applyXORDiff(const UpdateSameSizeInPlaceDescriptor& update_descriptor, u8* dst, const u8* src);
 };
 // -------------------------------------------------------------------------------------
 }  // namespace btree
