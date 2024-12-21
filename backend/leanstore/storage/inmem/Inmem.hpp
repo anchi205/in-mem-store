@@ -9,6 +9,8 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <list>
+#include <unordered_map>
 // -------------------------------------------------------------------------------------
 using namespace leanstore::storage;
 // -------------------------------------------------------------------------------------
@@ -55,6 +57,9 @@ private:
 
    std::map<KeyValue, std::nullptr_t, KeyCompare> store;
    mutable std::mutex mutex;
+   std::list<std::vector<u8>> lru_list;
+   std::unordered_map<std::string, std::list<std::vector<u8>>::iterator> lru_map;
+   const size_t MAX_STORE_SIZE = 1000000;  // Default max size
 
 public:
    struct Config {
