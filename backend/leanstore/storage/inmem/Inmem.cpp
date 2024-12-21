@@ -53,7 +53,7 @@ namespace inmem {
 // -------------------------------------------------------------------------------------
 OP_RESULT Inmem::lookup(u8* key, u16 key_length, std::function<void(const u8*, u16)> payload_callback)
 {
-   return OP_RESULT::OTHER;
+   return OP_RESULT::OK;
 }
 
 // -------------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length,
 // -------------------------------------------------------------------------------------
 OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
 {
-   return OP_RESULT::OTHER;
+   return OP_RESULT::OK;
 }
 
 // -------------------------------------------------------------------------------------
