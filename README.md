@@ -21,6 +21,9 @@ Install dependencies:
 
 `sudo build/frontend/tpcc --ssd_path=./leanstore_ssd_file --worker_threads=16 --pp_threads=4 --dram_gib=8 --tpcc_warehouse_count=100 --notpcc_warehouse_affinity --csv_path=./log --free_pct=1 --contention_split --xmerge --print_tx_console --run_for_seconds=60 --isolation_level=si`
 
+### Minimal
+`sudo build/frontend/min --ssd_path=./leanstore_ssd_file --worker_threads=1 --pp_threads=1 --dram_gib=10 --csv_path=./log --free_pct=1 --contention_split --xmerge --print_tx_console --run_for_seconds=10 --isolation_level=si`
+
 Check `build/frontend/tpcc --help` for other options.
 
 ### YCSB
