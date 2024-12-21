@@ -4,7 +4,7 @@
  *
  */
 
-#include "../shared/LeanStoreAdapter.hpp"
+#include "../shared/LeanStoreAdapterInmem.hpp"
 #include "../shared/Types.hpp"
 #include "leanstore/concurrency-recovery/CRMG.hpp"
 #include "leanstore/profiling/counters/CPUCounters.hpp"
@@ -30,8 +30,8 @@ DEFINE_int64(scale, 1, "Should the scaling be increased, ca 100 mb per scale");
 using namespace std;
 using namespace leanstore;
 // -------------------------------------------------------------------------------------
-LeanStoreAdapter<unscaled_t> unscaled_table;
-LeanStoreAdapter<scaled_t> scaled_table;
+LeanStoreAdapterInmem<unscaled_t> unscaled_table;
+LeanStoreAdapterInmem<scaled_t> scaled_table;
 string db_meta;
 bool load_db;
 // -------------------------------------------------------------------------------------
@@ -66,8 +66,8 @@ void setup(LeanStore& db)
    scale = FLAGS_scale;
 
    crm.scheduleJobSync(0, [&]() {
-      unscaled_table = LeanStoreAdapter<unscaled_t>(db, "unscaled");
-      scaled_table = LeanStoreAdapter<scaled_t>(db, "scaled");
+      unscaled_table = LeanStoreAdapterInmem<unscaled_t>(db, "unscaled");
+      scaled_table = LeanStoreAdapterInmem<scaled_t>(db, "scaled");
    });
    db.registerConfigEntry("scale", FLAGS_scale);
 }
@@ -110,12 +110,11 @@ void loadComplexData(std::atomic<u32>& global_scale_factor)
    }
 }
 
-template <class T>
-void printer(string name, LeanStoreAdapter<T>& adapter, LeanStore& db)
+template <typename T>
+void printer(string name, LeanStoreAdapterInmem<T>& adapter, LeanStore& db)
 {
-   cout << name << " pages" << endl;
-   u64 pages = adapter.btree->countPages();
-   cout << "nodes:" << pages << " space:" << pages / (float)(db.getBufferManager().consumedPages() / 100) << "% height:" << adapter.btree->getHeight()
+   u64 pages = adapter.store->countPages();
+   cout << "nodes:" << pages << " space:" << pages / (float)(db.getBufferManager().consumedPages() / 100) << "% height:" << adapter.store->getHeight()
         << endl;
 }
 
