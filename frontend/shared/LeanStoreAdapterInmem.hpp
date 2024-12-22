@@ -20,11 +20,13 @@ struct LeanStoreAdapterInmem : Adapter<Record> {
    }
    LeanStoreAdapterInmem(LeanStore& db, string name) : name(name)
    {
-      if (FLAGS_recover) {
-         store = &db.retrieveInmem(name);
-      } else {
-         store = &db.registerInmem(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
-      }
+      // if (FLAGS_recover) {
+      //    store = &db.retrieveInmem(name);
+      // } else {
+      //    store = &db.registerInmem(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
+      // }
+
+      store = &db.registerInmem(name, {.enable_wal = FLAGS_wal, .use_bulk_insert = false});
 
    }
    // -------------------------------------------------------------------------------------
