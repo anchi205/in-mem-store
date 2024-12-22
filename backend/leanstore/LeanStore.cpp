@@ -252,10 +252,8 @@ storage::inmem::Inmem& LeanStore::registerInmem(string name, storage::inmem::Inm
    assert(inmems.find(name) == inmems.end());
    auto& inmem = inmems[name];
    DTID dtid = DTRegistry::global_dt_registry.registerDatastructureInstance(0, reinterpret_cast<void*>(&inmem), name);
-   // ************** // inmem.create(dtid, config);
-   // to-be-done
-   // this function doesn't exist in class def
-   // either make it child class or implement the logic seperately
+   inmem.create(dtid, config);
+   // need-to-change
    return inmem;
 }
 // -------------------------------------------------------------------------------------

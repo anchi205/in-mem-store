@@ -22,7 +22,6 @@ namespace storage
 namespace btree
 {
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::lookup(u8* o_key, u16 o_key_length, function<void(const u8*, u16)> payload_callback)
 {
    const OP_RESULT ret = lookupOptimistic(o_key, o_key_length, payload_callback);
@@ -33,7 +32,6 @@ OP_RESULT BTreeVI::lookup(u8* o_key, u16 o_key_length, function<void(const u8*, 
    }
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::lookupPessimistic(u8* key_buffer, const u16 key_length, function<void(const u8*, u16)> payload_callback)
 {
    MutableSlice m_key(key_buffer, key_length);
@@ -80,7 +78,6 @@ OP_RESULT BTreeVI::lookupPessimistic(u8* key_buffer, const u16 key_length, funct
    return OP_RESULT::OTHER;
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::lookupOptimistic(const u8* key, const u16 key_length, function<void(const u8*, u16)> payload_callback)
 {
    while (true) {
@@ -155,7 +152,6 @@ OP_RESULT BTreeVI::lookupOptimistic(const u8* key, const u16 key_length, functio
    return OP_RESULT::OTHER;
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::prepareDeterministicUpdate(u8* o_key, u16 o_key_length, BTreeExclusiveIterator& iterator)
 {
    jumpmuTry()
@@ -173,7 +169,6 @@ OP_RESULT BTreeVI::prepareDeterministicUpdate(u8* o_key, u16 o_key_length, BTree
    return OP_RESULT::OTHER;
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::executeDeterministricUpdate(u8* o_key,
                                                u16 o_key_length,
                                                BTreeExclusiveIterator& iterator,
@@ -234,7 +229,6 @@ OP_RESULT BTreeVI::executeDeterministricUpdate(u8* o_key,
    UNREACHABLE();
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::updateSameSizeInPlace(u8* o_key,
                                          u16 o_key_length,
                                          function<void(u8* value, u16 value_size)> callback,
@@ -397,7 +391,6 @@ OP_RESULT BTreeVI::updateSameSizeInPlace(u8* o_key,
    return OP_RESULT::OTHER;
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::insert(u8* o_key, u16 o_key_length, u8* value, u16 value_length)
 {
    cr::activeTX().markAsWrite();
@@ -454,7 +447,6 @@ OP_RESULT BTreeVI::insert(u8* o_key, u16 o_key_length, u8* value, u16 value_leng
    return OP_RESULT::OTHER;
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::remove(u8* o_key, u16 o_key_length)
 {
    // TODO: remove fat tuple
@@ -857,7 +849,6 @@ struct DTRegistry::DTMeta BTreeVI::getMeta()
    return btree_meta;
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::scanDesc(u8* o_key, u16 o_key_length, function<bool(const u8*, u16, const u8*, u16)> callback, function<void()>)
 {
    if (cr::activeTX().isOLAP()) {
@@ -868,7 +859,6 @@ OP_RESULT BTreeVI::scanDesc(u8* o_key, u16 o_key_length, function<bool(const u8*
    }
 }
 // -------------------------------------------------------------------------------------
-// to-be-done
 OP_RESULT BTreeVI::scanAsc(u8* o_key,
                            u16 o_key_length,
                            function<bool(const u8* key, u16 key_length, const u8* value, u16 value_length)> callback,

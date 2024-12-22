@@ -204,6 +204,60 @@ u64 Inmem::getHeight()
    return 1; // In-memory store is flat
 }
 
+void Inmem::create(DTID dtid, Config config) {
+   this->dt_id = dtid;
+   this->config = config;
+   // Initialize empty store
+   store.clear();
+}
+
+double Inmem::averageSpaceUsage() {
+   std::lock_guard<std::mutex> lock(mutex);
+   size_t total_size = 0;
+   for (const auto& entry : store) {
+      total_size += entry.first.key.size() + entry.first.value.size();
+   }
+   return store.empty() ? 0.0 : static_cast<double>(total_size) / store.size();
+}
+
+u32 Inmem::bytesFree() {
+   std::lock_guard<std::mutex> lock(mutex);
+   size_t used_size = 0;
+   for (const auto& entry : store) {
+      used_size += entry.first.key.size() + entry.first.value.size();
+   }
+   return MAX_STORE_SIZE - used_size;
+}
+
+void Inmem::printInfos(uint64_t totalSize) {
+   std::lock_guard<std::mutex> lock(mutex);
+   std::cout << "entries:" << store.size() 
+             << " space:" << (store.size() * sizeof(KeyValue)) / (float)totalSize
+             << " bytesFree:" << bytesFree() << std::endl;
+}
+
+std::unordered_map<std::string, std::string> Inmem::serialize() {
+   std::lock_guard<std::mutex> lock(mutex);
+   std::unordered_map<std::string, std::string> result;
+   // Serialize key-value pairs
+   for (const auto& entry : store) {
+      std::string key(entry.first.key.begin(), entry.first.key.end());
+      std::string value(entry.first.value.begin(), entry.first.value.end());
+      result[key] = value;
+   }
+   return result;
+}
+
+void Inmem::deserialize(std::unordered_map<std::string, std::string> serialized) {
+   std::lock_guard<std::mutex> lock(mutex);
+   store.clear();
+   for (const auto& entry : serialized) {
+      std::vector<u8> key(entry.first.begin(), entry.first.end());
+      std::vector<u8> value(entry.second.begin(), entry.second.end());
+      store.insert({KeyValue(key.data(), key.size(), value.data(), value.size()), nullptr});
+   }
+}
+
 } // namespace inmem
 } // namespace storage
 } // namespace leanstore

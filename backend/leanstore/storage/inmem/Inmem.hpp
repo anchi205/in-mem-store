@@ -67,6 +67,9 @@ public:
       bool use_bulk_insert = false;
    };
 
+   DTID dt_id;
+   Config config;
+
    Inmem() = default;
    // Interface implementations
    virtual OP_RESULT lookup(u8* key, u16 key_length, std::function<void(const u8*, u16)> payload_callback) override;
@@ -94,6 +97,36 @@ public:
    virtual u64 countPages() override;
    virtual u64 countEntries() override;
    virtual u64 getHeight() override;
+   
+   // Configuration management
+   void create(DTID dtid, Config config);
+   
+   // Iterator support
+   class Iterator {
+   private:
+      std::map<KeyValue, std::nullptr_t, KeyCompare>::iterator it;
+      const Inmem* inmem;
+      
+   public:
+      Iterator(Inmem* i) : inmem(i) {}
+      bool isValid() const;
+      void next();
+      void prev(); 
+      Slice key() const;
+      Slice value() const;
+   };
+   
+   // Statistics and metadata
+   double averageSpaceUsage();
+   u32 bytesFree();
+   void printInfos(uint64_t totalSize);
+   
+   // Serialization support
+   std::unordered_map<std::string, std::string> serialize();
+   void deserialize(std::unordered_map<std::string, std::string> serialized);
+   
+   // Transaction support
+   bool isVisibleForMe(WORKERID worker_id, TXID tx_ts, bool to_write = true);
 };
 
 } // namespace inmem
