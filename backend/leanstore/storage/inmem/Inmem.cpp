@@ -70,103 +70,58 @@ OP_RESULT Inmem::lookup(u8* key, u16 key_length, std::function<void(const u8*, u
 
 // -------------------------------------------------------------------------------------
 
-// OP_RESULT Inmem::scanAsc(u8* start_key,
-//                            u16 key_length,
-//                            std::function<bool(const u8* key, u16 key_length, const u8* payload, u16 payload_length)> callback,
-//                            function<void()>)
-// {
-//    COUNTERS_BLOCK()
-//    {
-//       WorkerCounters::myCounters().dt_scan_asc[dt_id]++;
-//    }
-//    Slice key(start_key, key_length);
-//    jumpmuTry()
-//    {
-//       BTreeSharedIterator iterator(*static_cast<BTreeGeneric*>(this));
-//       OP_RESULT ret = iterator.seek(key);
-//       while (ret == OP_RESULT::OK) {
-//          iterator.assembleKey();
-//          auto key = iterator.key();
-//          auto value = iterator.value();
-//          if (!callback(key.data(), key.length(), value.data(), value.length())) {
-//             break;
-//          }
-//          ret = iterator.next();
-//       }
-//       jumpmu_return OP_RESULT::OK;
-//    }
-//    jumpmuCatch() {}
-//    UNREACHABLE();
-//    return OP_RESULT::OTHER;
-// }
-
-OP_RESULT Inmem::scanAsc(u8* start_key, u16 key_length, 
-                        std::function<bool(const u8*, u16, const u8*, u16)> callback,
-                        std::function<void()>)
+OP_RESULT Inmem::scanAsc(u8* start_key,
+                           u16 key_length,
+                           std::function<bool(const u8* key, u16 key_length, const u8* payload, u16 payload_length)> callback,
+                           function<void()>)
 {
-   std::lock_guard<std::mutex> lock(mutex);
-   auto it = store.lower_bound(KeyValue(start_key, key_length, nullptr, 0));
-   
-   while (it != store.end()) {
-      if (!callback(it->first.key.data(), it->first.key.size(),
-                   it->first.value.data(), it->first.value.size())) {
-         break;
-      }
-      ++it;
+   COUNTERS_BLOCK()
+   {
+      WorkerCounters::myCounters().dt_scan_asc[dt_id]++;
    }
-   return OP_RESULT::OK;
+   jumpmuTry()
+   {
+      auto it = store.lower_bound(KeyValue(start_key, key_length, nullptr, 0));
+      while (it != store.end()) {
+         if (!callback(it->first.key.data(), it->first.key.size(),
+                     it->first.value.data(), it->first.value.size())) {
+            break;
+         }
+         ++it;
+      }
+      return OP_RESULT::OK;
+   }
+   jumpmuCatch() {}
+   UNREACHABLE();
+   return OP_RESULT::OTHER;
 }
 
 // -------------------------------------------------------------------------------------
 
-// OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(const u8*, u16, const u8*, u16)> callback, function<void()>)
-// {
-//    COUNTERS_BLOCK()
-//    {
-//       WorkerCounters::myCounters().dt_scan_desc[dt_id]++;
-//    }
-//    const Slice key(start_key, key_length);
-//    jumpmuTry()
-//    {
-//       BTreeSharedIterator iterator(*static_cast<BTreeGeneric*>(this));
-//       auto ret = iterator.seekForPrev(key);
-//       if (ret != OP_RESULT::OK) {
-//          jumpmu_return ret;
-//       }
-//       while (true) {
-//          iterator.assembleKey();
-//          auto key = iterator.key();
-//          auto value = iterator.value();
-//          if (!callback(key.data(), key.length(), value.data(), value.length())) {
-//             jumpmu_return OP_RESULT::OK;
-//          } else {
-//             if (iterator.prev() != OP_RESULT::OK) {
-//                jumpmu_return OP_RESULT::NOT_FOUND;
-//             }
-//          }
-//       }
-//    }
-//    jumpmuCatch() {}
-//    UNREACHABLE();
-//    return OP_RESULT::OTHER;
-// }
-
-OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length,
-                         std::function<bool(const u8*, u16, const u8*, u16)> callback,
-                         std::function<void()>)
+OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(const u8*, u16, const u8*, u16)> callback, function<void()>)
 {
-   std::lock_guard<std::mutex> lock(mutex);
-   auto it = store.lower_bound(KeyValue(start_key, key_length, nullptr, 0));
-   
-   while (it != store.begin()) {
-      --it;
-      if (!callback(it->first.key.data(), it->first.key.size(),
-                   it->first.value.data(), it->first.value.size())) {
-         break;
-      }
+   COUNTERS_BLOCK()
+   {
+      WorkerCounters::myCounters().dt_scan_desc[dt_id]++;
    }
-   return OP_RESULT::OK;
+   const Slice key(start_key, key_length);
+   jumpmuTry()
+   {
+      auto it = store.lower_bound(KeyValue(start_key, key_length, nullptr, 0));
+      while (it != store.begin()) {
+         --it;
+         if (!callback(it->first.key.data(), it->first.key.size(),
+                     it->first.value.data(), it->first.value.size())) {
+            break;
+         }
+      }
+      return OP_RESULT::OK;
+   }
+   jumpmuCatch() {}
+   UNREACHABLE();
+   return OP_RESULT::OTHER;
 }
+
 // -------------------------------------------------------------------------------------
 OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
 {
@@ -305,53 +260,26 @@ OP_RESULT Inmem::updateSameSizeInPlace(u8* key, u16 key_length,
    return OP_RESULT::NOT_FOUND;
 }
 // -------------------------------------------------------------------------------------
+
 OP_RESULT Inmem::remove(u8* key, u16 key_length)
 {
-   auto it = store.find(KeyValue(key, key_length, nullptr, 0));
-   if (it != store.end()) {
-      store.erase(it);
-      return OP_RESULT::OK;
+   cr::activeTX().markAsWrite();
+   if (config.enable_wal) {
+      cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
    }
-   return OP_RESULT::NOT_FOUND;
+   jumpmuTry()
+   {
+      auto it = store.find(KeyValue(key, key_length, nullptr, 0));
+      if (it != store.end()) {
+         store.erase(it);
+         return OP_RESULT::OK;
+      }
+      return OP_RESULT::NOT_FOUND;
+   }
+   jumpmuCatch() {}
+   UNREACHABLE();
+   return OP_RESULT::OTHER;
 }
-
-// OP_RESULT Inmem::remove(u8* o_key, u16 o_key_length)
-// {
-//    cr::activeTX().markAsWrite();
-//    if (config.enable_wal) {
-//       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
-//    }
-//    const Slice key(o_key, o_key_length);
-//    jumpmuTry()
-//    {
-//       BTreeExclusiveIterator iterator(*static_cast<BTreeGeneric*>(this));
-//       auto ret = iterator.seekExact(key);
-//       if (ret != OP_RESULT::OK) {
-//          jumpmu_return ret;
-//       }
-//       Slice value = iterator.value();
-//       if (config.enable_wal) {
-//          auto wal_entry = iterator.leaf.reserveWALEntry<WALRemove>(o_key_length + value.length());
-//          wal_entry->type = WAL_LOG_TYPE::WALRemove;
-//          wal_entry->key_length = o_key_length;
-//          wal_entry->value_length = value.length();
-//          std::memcpy(wal_entry->payload, key.data(), key.length());
-//          std::memcpy(wal_entry->payload + o_key_length, value.data(), value.length());
-//          wal_entry.submit();
-//          iterator.markAsDirty();
-//       } else {
-//          iterator.markAsDirty();
-//       }
-//       ret = iterator.removeCurrent();
-//       ensure(ret == OP_RESULT::OK);
-//       iterator.mergeIfNeeded();
-//       jumpmu_return OP_RESULT::OK;
-//    }
-//    jumpmuCatch() {}
-//    UNREACHABLE();
-//    return OP_RESULT::OTHER;
-// }
-// -------------------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------------------
 
@@ -366,7 +294,6 @@ u64 Inmem::countEntries() {
 u64 Inmem::getHeight() {
    return 0; // Or implement actual height calculation logic
 }
-
 
 // -------------------------------------------------------------------------------------
 }  // namespace btree
