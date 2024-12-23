@@ -82,8 +82,8 @@ LeanStore::LeanStore()
    buffer_manager = make_unique<storage::BufferManager>(ssd_fd);
    BMC::global_bf = buffer_manager.get();
    // -------------------------------------------------------------------------------------
-   DTRegistry::global_dt_registry.registerDatastructureType(0, storage::btree::BTreeLL::getMeta());
-   DTRegistry::global_dt_registry.registerDatastructureType(2, storage::btree::BTreeVI::getMeta());
+   // DTRegistry::global_dt_registry.registerDatastructureType(0, storage::btree::BTreeLL::getMeta());
+   // DTRegistry::global_dt_registry.registerDatastructureType(2, storage::btree::BTreeVI::getMeta());
    // DTRegistry::global_dt_registry.registerDatastructureType(2, storage::inmem::Inmem::getMeta());
    // to-be-done (integarte inmem also)
    // -------------------------------------------------------------------------------------
@@ -102,14 +102,14 @@ LeanStore::LeanStore()
    cr_manager = make_unique<cr::CRManager>(*history_tree.get(), ssd_fd, end_of_block_device);
    cr::CRManager::global = cr_manager.get();
    cr_manager->scheduleJobSync(0, [&]() {
-      history_tree->update_btrees = std::make_unique<leanstore::storage::btree::BTreeLL*[]>(FLAGS_worker_threads);
-      history_tree->remove_btrees = std::make_unique<leanstore::storage::btree::BTreeLL*[]>(FLAGS_worker_threads);
+      // history_tree->update_btrees = std::make_unique<leanstore::storage::btree::BTreeLL*[]>(FLAGS_worker_threads);
+      // history_tree->remove_btrees = std::make_unique<leanstore::storage::btree::BTreeLL*[]>(FLAGS_worker_threads);
       history_tree->update_inmems = std::make_unique<leanstore::storage::inmem::Inmem*[]>(FLAGS_worker_threads);
       history_tree->remove_inmems = std::make_unique<leanstore::storage::inmem::Inmem*[]>(FLAGS_worker_threads);
       for (u64 w_i = 0; w_i < FLAGS_worker_threads; w_i++) {
          std::string name = "_history_tree_" + std::to_string(w_i);
-         history_tree->update_btrees[w_i] = &registerBTreeLL(name + "_updates", {.enable_wal = false, .use_bulk_insert = true});
-         history_tree->remove_btrees[w_i] = &registerBTreeLL(name + "_removes", {.enable_wal = false, .use_bulk_insert = true});
+         // history_tree->update_btrees[w_i] = &registerBTreeLL(name + "_updates", {.enable_wal = false, .use_bulk_insert = true});
+         // history_tree->remove_btrees[w_i] = &registerBTreeLL(name + "_removes", {.enable_wal = false, .use_bulk_insert = true});
          history_tree->update_inmems[w_i] = &registerInmem(name + "_updates", {.enable_wal = false, .use_bulk_insert = true});
          history_tree->remove_inmems[w_i] = &registerInmem(name + "_removes", {.enable_wal = false, .use_bulk_insert = true});
          // to-be-done (integarte inmem also)
