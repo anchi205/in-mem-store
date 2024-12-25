@@ -39,6 +39,11 @@ struct LeanStoreAdapterInmem : Adapter<Record> {
   // - lookupField
   // -  count
 
+
+   // ns-wal-do
+   // maybe check here as a second priority to cpature the namespace_id from active transaction 
+   // and log lsn,namespace,function call,crc
+   
    void scan(const typename Record::Key& key,
             const std::function<bool(const typename Record::Key&, const Record&)>& callback,
             std::function<void()> reset = [](){}) override {

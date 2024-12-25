@@ -55,6 +55,7 @@ struct Transaction {
    bool isReadOnly() { return is_read_only; }
    bool hasWrote() { return has_wrote; }
    bool isDurable() { return is_durable; }
+   unsigned int& getNamespace() { return namespace_id; }
    bool atLeastSI() { return current_tx_isolation_level >= TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION; }
    bool isSI() { return current_tx_isolation_level == TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION; }
    bool isReadCommitted() { return current_tx_isolation_level == TX_ISOLATION_LEVEL::READ_COMMITTED; }

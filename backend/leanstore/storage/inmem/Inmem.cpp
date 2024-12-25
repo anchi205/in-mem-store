@@ -17,6 +17,11 @@ namespace inmem
 {
 // -------------------------------------------------------------------------------------
 
+// ns-wal-do
+// maybe check here as a second priority to cpature the namespace_id from active transaction 
+// and log lsn,namespace,function call,crc
+
+
 OP_RESULT Inmem::lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback)
 {
    while (true) {
@@ -119,8 +124,6 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
    try
    {
       std::vector<u8> key_vec(key, key + key_length);
-      std::string ns = "lmao";
-      writeNamespaceToFile(ns);
 
       // Check if the key already exists
       auto it = store.find(KeyValue(key, key_length, nullptr, 0));
@@ -151,6 +154,18 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       std::string key_str(key_vec.begin(), key_vec.end());
       lru_list.push_front(key_vec);
       lru_map[key_str] = lru_list.begin();
+
+
+
+      // ns-wal-do
+      // capture activeTX here and get namespaceId from it
+      // std::string ns = "yashu yahu";
+      // writeNamespaceToFile(ns);
+
+      auto& active_tx_ns = cr::activeTX().getNamespace();
+      std::string namespace_id = to_string(active_tx_ns);
+      writeNamespaceToFile(namespace_id);
+
       return OP_RESULT::OK;
    }
    catch(...) {

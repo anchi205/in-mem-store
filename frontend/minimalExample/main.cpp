@@ -199,6 +199,8 @@ void checkScales(std::atomic<u32>& global_scale)
       if (scale_fragment > scale) {
          return;
       }
+      // ns-wal-do
+      // pass namespace id from here
       cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6969);
       if (scale_fragment == 0) {
          assert(checkUnscaled());
