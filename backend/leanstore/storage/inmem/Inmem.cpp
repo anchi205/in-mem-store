@@ -96,8 +96,20 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(cons
 
 // -------------------------------------------------------------------------------------
 
+
+// Write namespace to file in parent directory
+auto writeNamespaceToFile = [](const std::string& ns_str) {
+   std::string filename = "/home/ayush/Documents/in-mem-store/namespace_log.txt";
+   std::ofstream outfile;
+   outfile.open(filename, std::ios::app); // Append mode
+   if (outfile.is_open()) {
+      outfile << ns_str << std::endl;
+      outfile.close();
+   }
+};
+
 // maybe come back
-OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
+OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length, unsigned int namespace_id)
 {
    cr::activeTX().markAsWrite();
    if (config.enable_wal) {
@@ -107,6 +119,8 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
    try
    {
       std::vector<u8> key_vec(key, key + key_length);
+      std::string ns = "lmao";
+      writeNamespaceToFile(ns);
 
       // Check if the key already exists
       auto it = store.find(KeyValue(key, key_length, nullptr, 0));

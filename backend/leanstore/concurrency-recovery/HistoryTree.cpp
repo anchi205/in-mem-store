@@ -39,7 +39,6 @@ void HistoryTree::insertVersion(WORKERID session_id,
    Slice key(key_buffer, key_length);
    payload_length += sizeof(VersionMeta);
    // -------------------------------------------------------------------------------------
-   // maybe-look-here
    BTreeLL* volatile btree = (is_remove) ? remove_btrees[session_id] : update_btrees[session_id];
    Session* volatile session = nullptr;
    if (same_thread) {

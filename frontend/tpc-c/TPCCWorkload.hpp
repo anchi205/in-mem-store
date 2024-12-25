@@ -440,9 +440,7 @@ class TPCCWorkload
          c_balance = rec.c_balance;
       });
 
-     // chnage back to -1 here
-     // to-be-done
-      Integer o_id = 1;
+      Integer o_id = -1;
       // -------------------------------------------------------------------------------------
       // latest order id desc
       if (order_wdc_index) {

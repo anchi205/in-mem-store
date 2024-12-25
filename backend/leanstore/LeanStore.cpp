@@ -112,7 +112,6 @@ LeanStore::LeanStore()
          // history_tree->remove_btrees[w_i] = &registerBTreeLL(name + "_removes", {.enable_wal = false, .use_bulk_insert = true});
          history_tree->update_inmems[w_i] = &registerInmem(name + "_updates", {.enable_wal = false, .use_bulk_insert = true});
          history_tree->remove_inmems[w_i] = &registerInmem(name + "_removes", {.enable_wal = false, .use_bulk_insert = true});
-         // to-be-done (integarte inmem also)
       }
    });
    // -------------------------------------------------------------------------------------

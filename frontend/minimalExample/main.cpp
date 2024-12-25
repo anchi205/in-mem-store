@@ -89,7 +89,7 @@ void loadDB(LeanStore& db)
 
 void loadSimpleData()
 {
-   cr::Worker::my().startTX();
+   cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6969);
    loadUnscaled();
    cr::Worker::my().commitTX();
 }
@@ -101,7 +101,7 @@ void loadComplexData(std::atomic<u32>& global_scale_factor)
       if (scale_fragment > scale) {
          return;
       }
-      cr::Worker::my().startTX();
+      cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6969);
       loadScaled(scale_fragment);
       cr::Worker::my().commitTX();
       if (cr::Worker::my().worker_id == 0) {
@@ -159,10 +159,11 @@ void startBenchmarkThreads(LeanStore& db, atomic<u64>& keep_running, u64 tx_per_
 
 void executeOneTx(volatile u64& tx_acc)
 {
-   cr::Worker::my().startTX();
+   cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6969);
    runOneQuery();
    WorkerCounters::myCounters().tx++;
    tx_acc++;
+   cr::Worker::my().commitTX();
 }
 
 void stopBenchmarkThreads(LeanStore& db, atomic<u64>& keep_running)
@@ -198,7 +199,7 @@ void checkScales(std::atomic<u32>& global_scale)
       if (scale_fragment > scale) {
          return;
       }
-      cr::Worker::my().startTX();
+      cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6969);
       if (scale_fragment == 0) {
          assert(checkUnscaled());
       } else {

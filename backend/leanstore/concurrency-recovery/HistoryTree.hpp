@@ -31,7 +31,6 @@ struct __attribute__((packed)) VersionMeta {
 // -------------------------------------------------------------------------------------
 using BTreeLL = leanstore::storage::btree::BTreeLL;
 using Inmem = leanstore::storage::inmem::Inmem;
-// maybe-look-here
 class HistoryTree : public HistoryTreeInterface
 {
   private:
@@ -46,7 +45,7 @@ class HistoryTree : public HistoryTreeInterface
    Session remove_sessions[leanstore::cr::STATIC_MAX_WORKERS];
 
   public:
-   // to-be-done
+  //to-be-done (check all these func defs)
    std::unique_ptr<BTreeLL*[]> update_btrees;
    std::unique_ptr<BTreeLL*[]> remove_btrees;
    std::unique_ptr<Inmem*[]> update_inmems;
@@ -67,7 +66,6 @@ class HistoryTree : public HistoryTreeInterface
    virtual void purgeVersions(WORKERID worker_id, TXID from_tx_id, TXID to_tx_id, RemoveVersionCallback cb, const u64 limit);
    virtual void visitRemoveVersions(WORKERID worker_id, TXID from_tx_id, TXID to_tx_id,
                                     RemoveVersionCallback cb);  // [from, to]
- // to-be-done
 };
 // -------------------------------------------------------------------------------------
 }  // namespace cr
