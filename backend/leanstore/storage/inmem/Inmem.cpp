@@ -109,7 +109,7 @@ auto writeNamespaceToFile = [](const std::string& ns_str) {
 };
 
 // maybe come back
-OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length, unsigned int namespace_id)
+OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
 {
    cr::activeTX().markAsWrite();
    if (config.enable_wal) {
