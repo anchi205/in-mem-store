@@ -89,7 +89,7 @@ void loadDB(LeanStore& db)
 
 void loadSimpleData()
 {
-   cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6969);
+   cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6968);
    loadUnscaled();
    cr::Worker::my().commitTX();
 }
@@ -159,7 +159,7 @@ void startBenchmarkThreads(LeanStore& db, atomic<u64>& keep_running, u64 tx_per_
 
 void executeOneTx(volatile u64& tx_acc)
 {
-   cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6969);
+   cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6970);
    runOneQuery();
    WorkerCounters::myCounters().tx++;
    tx_acc++;
@@ -201,7 +201,7 @@ void checkScales(std::atomic<u32>& global_scale)
       }
       // ns-wal-do
       // pass namespace id from here
-      cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6969);
+      cr::Worker::my().startTX(TX_MODE::OLTP, TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, false, 6971);
       if (scale_fragment == 0) {
          assert(checkUnscaled());
       } else {

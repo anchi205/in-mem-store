@@ -106,7 +106,8 @@ void CRManager::groupCommiter2()
                   if (FLAGS_wal_pwrite) {
                      // TODO: add the concept of chunks
                      const u64 ssd_offset = g_ssd_offset.fetch_add(-size_aligned) - size_aligned;
-                     pwrite(ssd_fd, worker.logging.wal_buffer + lower_offset, size_aligned, ssd_offset);
+                     ssize_t written = pwrite(ssd_fd, worker.logging.wal_buffer + lower_offset, size_aligned, ssd_offset);
+                     ensure(written == size_aligned);  // Ensure all bytes were written
                      // add_pwrite(worker.logging.wal_buffer + lower_offset, size_aligned, ssd_offset);
                      // -------------------------------------------------------------------------------------
                      COUNTERS_BLOCK() { CRCounters::myCounters().gct_write_bytes += size_aligned; }
@@ -120,7 +121,8 @@ void CRManager::groupCommiter2()
                      // -------------------------------------------------------------------------------------
                      if (FLAGS_wal_pwrite) {
                         const u64 ssd_offset = g_ssd_offset.fetch_add(-size_aligned) - size_aligned;
-                        pwrite(ssd_fd, worker.logging.wal_buffer + lower_offset, size_aligned, ssd_offset);
+                        ssize_t written = pwrite(ssd_fd, worker.logging.wal_buffer + lower_offset, size_aligned, ssd_offset);
+                        ensure(written == size_aligned);  // Ensure all bytes were written
                         // add_pwrite(worker.logging.wal_buffer + lower_offset, size_aligned, ssd_offset);
                         // -------------------------------------------------------------------------------------
                         COUNTERS_BLOCK() { CRCounters::myCounters().gct_write_bytes += size_aligned; }
@@ -134,7 +136,8 @@ void CRManager::groupCommiter2()
                      // -------------------------------------------------------------------------------------
                      if (FLAGS_wal_pwrite) {
                         const u64 ssd_offset = g_ssd_offset.fetch_add(-size_aligned) - size_aligned;
-                        pwrite(ssd_fd, worker.logging.wal_buffer, size_aligned, ssd_offset);
+                        ssize_t written = pwrite(ssd_fd, worker.logging.wal_buffer, size_aligned, ssd_offset);
+                        ensure(written == size_aligned);  // Ensure all bytes were written
                         // add_pwrite(worker.logging.wal_buffer, size_aligned, ssd_offset);
                         // -------------------------------------------------------------------------------------
                         COUNTERS_BLOCK() { CRCounters::myCounters().gct_write_bytes += size_aligned; }
