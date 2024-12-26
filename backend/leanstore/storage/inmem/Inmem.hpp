@@ -24,29 +24,29 @@ class Inmem : public KVInterface, public InmemGeneric
 {
   // ************************* NEEDS TO BE PORTED *************************
   public:
-   struct WALBeforeAfterImage : WALEntry {
-      u16 image_size;
-      u8 payload[];
-   };
-   struct WALAfterImage : WALEntry {
-      u16 image_size;
-      u8 payload[];
-   };
-   struct WALInsert : WALEntry {
-      u16 key_length;
-      u16 value_length;
-      u8 payload[];
-   };
-   struct WALUpdate : WALEntry {
-      u16 key_length;
-      u16 delta_length;
-      u8 payload[];
-   };
-   struct WALRemove : WALEntry {
-      u16 key_length;
-      u16 value_length;
-      u8 payload[];
-   };
+   // struct WALBeforeAfterImage : WALEntry {
+   //    u16 image_size;
+   //    u8 payload[];
+   // };
+   // struct WALAfterImage : WALEntry {
+   //    u16 image_size;
+   //    u8 payload[];
+   // };
+   // struct WALInsert : WALEntry {
+   //    u16 key_length;
+   //    u16 value_length;
+   //    u8 payload[];
+   // };
+   // struct WALUpdate : WALEntry {
+   //    u16 key_length;
+   //    u16 delta_length;
+   //    u8 payload[];
+   // };
+   // struct WALRemove : WALEntry {
+   //    u16 key_length;
+   //    u16 value_length;
+   //    u8 payload[];
+   // };
    // -------------------------------------------------------------------------------------
    Inmem() = default;
    // -------------------------------------------------------------------------------------

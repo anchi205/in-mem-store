@@ -14,6 +14,7 @@ void InmemGeneric::create(DTID dtid, Config config)
 {
    this->dt_id = dtid;
    this->config = config;
+   wal_manager = MemWALManager();
    // TODO: write WALs
 }
 

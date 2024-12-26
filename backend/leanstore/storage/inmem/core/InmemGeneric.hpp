@@ -1,6 +1,7 @@
 #pragma once
 #include "leanstore/Config.hpp"
 #include "leanstore/KVInterface.hpp"
+#include "mem-wal.hpp"
 #include "leanstore/profiling/counters/WorkerCounters.hpp"
 #include "leanstore/storage/buffer-manager/BufferManager.hpp"
 #include "leanstore/sync-primitives/PageGuard.hpp"
@@ -17,27 +18,7 @@ namespace storage
 namespace inmem
 {
 // -------------------------------------------------------------------------------------
-enum class WAL_LOG_TYPE : u8 {
-   WALInsert = 1,
-   WALUpdate = 2,
-   WALRemove = 3,
-   WALAfterBeforeImage = 4,
-   WALAfterImage = 5,
-   WALLogicalSplit = 10,
-   WALInitPage = 11
-};
-struct WALEntry {
-   WAL_LOG_TYPE type;
-};
-struct WALInitPage : WALEntry {
-   DTID dt_id;
-};
-struct WALLogicalSplit : WALEntry {
-   PID parent_pid = -1;
-   PID left_pid = -1;
-   PID right_pid = -1;
-   s32 right_pos = -1;
-};
+
 // -------------------------------------------------------------------------------------
 class InmemGeneric
 {
@@ -53,6 +34,7 @@ class InmemGeneric
       bool use_bulk_insert = false;
    };
    Config config;
+   MemWALManager wal_manager;
    // -------------------------------------------------------------------------------------
    InmemGeneric() = default;
    // -------------------------------------------------------------------------------------

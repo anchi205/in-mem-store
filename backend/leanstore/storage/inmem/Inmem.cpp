@@ -19,15 +19,17 @@ namespace inmem
 // -------------------------------------------------------------------------------------
 
 // Write namespace to file in parent directory
-void writeNamespaceToFile(const std::string& ns_str) {
-   std::string filename = "/home/ayush/Documents/in-mem-store/namespace_log.txt";
-   std::ofstream outfile;
-   outfile.open(filename, std::ios::app); // Append mode
-   if (outfile.is_open()) {
-      outfile << ns_str << std::endl;
-      outfile.close();
-   }
-}
+// void writeNamespaceToFile(const std::string& ns_str) {
+//    std::string filename = "/home/ayush/Documents/in-mem-store/namespace_log.txt";
+//    std::ofstream outfile;
+//    outfile.open(filename, std::ios::app); // Append mode
+//    if (outfile.is_open()) {
+//       outfile << ns_str << std::endl;
+//       outfile.close();
+//    }
+// }
+
+
 // ns-wal-do
 // maybe check here as a second priority to cpature the namespace_id from active transaction 
 // and log lsn,namespace,function call,crc
@@ -47,7 +49,7 @@ OP_RESULT Inmem::lookup(u8* key, u16 key_length, function<void(const u8*, u16)> 
          }
          auto& active_tx_ns = cr::activeTX().getNamespace();
          std::string namespace_id = to_string(active_tx_ns);
-         writeNamespaceToFile(namespace_id);
+         wal_manager.writeMemWALEntry(namespace_id);
          return OP_RESULT::NOT_FOUND;
       }
       catch(...)
@@ -82,7 +84,7 @@ OP_RESULT Inmem::scanAsc(u8* start_key,
       }
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      writeNamespaceToFile(namespace_id);
+      wal_manager.writeMemWALEntry(namespace_id);
       return OP_RESULT::OK;
    }
    jumpmuCatch() {}
@@ -111,7 +113,7 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(cons
       }
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      writeNamespaceToFile(namespace_id);
+      wal_manager.writeMemWALEntry(namespace_id);
       return OP_RESULT::OK;
    }
    jumpmuCatch() {}
@@ -171,7 +173,7 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
 
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      writeNamespaceToFile(namespace_id);
+      wal_manager.writeMemWALEntry(namespace_id);
 
       return OP_RESULT::OK;
    }
@@ -208,12 +210,12 @@ OP_RESULT Inmem::updateSameSizeInPlace(u8* key,
          store.insert({KeyValue(key, key_length, new_value.data(), new_value.size()), nullptr});
          auto& active_tx_ns = cr::activeTX().getNamespace();
          std::string namespace_id = to_string(active_tx_ns);
-         writeNamespaceToFile(namespace_id);
+         wal_manager.writeMemWALEntry(namespace_id);
          return OP_RESULT::OK;
       }
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      writeNamespaceToFile(namespace_id);
+      wal_manager.writeMemWALEntry(namespace_id);
       return OP_RESULT::NOT_FOUND;
    }
    catch(...) {}
@@ -236,12 +238,12 @@ OP_RESULT Inmem::remove(u8* key, u16 key_length)
          store.erase(it);
          auto& active_tx_ns = cr::activeTX().getNamespace();
          std::string namespace_id = to_string(active_tx_ns);
-         writeNamespaceToFile(namespace_id);
+         wal_manager.writeMemWALEntry(namespace_id);
          return OP_RESULT::OK;
       }
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      writeNamespaceToFile(namespace_id);
+      wal_manager.writeMemWALEntry(namespace_id);
       return OP_RESULT::NOT_FOUND;
    }
    jumpmuCatch() {}
