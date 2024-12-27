@@ -3,6 +3,10 @@
 #include <string>
 #include <cstdint>
 #include <fstream>
+#include <mutex>
+#include <thread>
+#include <vector>
+#include <atomic>
 
 namespace leanstore {
 namespace storage {
@@ -10,11 +14,10 @@ namespace inmem {
 
 // WAL entry format: LSN | Namespace ID | Payload Size | Payload | CRC32
 struct memWalWrite {
-   uint64_t lsn;           // Log sequence number
-   uint32_t namespace_id;  // Transaction namespace identifier
-   uint8_t payload_size;  // Size of the payload in bytes
-   uint32_t* payload;       // Variable length payload data
-   uint32_t crc;          // CRC32 checksum of the entry
+  char payload[16];
+  uint64_t lsn;           // Log sequence number
+  uint32_t namespace_id;  // Transaction namespace identifier
+  uint32_t crc;          // CRC32 checksum of the entry
 };
 
 
@@ -41,14 +44,60 @@ public:
   void recoverMemWALEntries(); // takes array of namespaces
   void closeMemWAL();
 
+  
 
 private:
+  static const size_t BUFFER_SIZE = 16 * 1024 * 1024; // 16MB
+  std::vector<memWalWrite> wal_buffer;
+
+  // std::atomic<bool> running;
+  // std::thread ticker_thread;
+  // std::mutex buffer_mutex;
+
+  size_t current_size;
+  std::string filename;
+  // size_t current_size;
+
+  // char wal_buffer[16 * 1024 * 1024]; // 16 MB buffer
+  // size_t buffer_pos = 0; // Current position in buffer
+  // int currSegment = 1;
+
   void changeWALFile();
   void rotateSegment();
   void deleteOldSegment();
   void SyncBuffer();
+  uint64_t getCurrentLSN() const {
+    return MemWALlsn;
+  }
 
-   std::ofstream wal_file;
+  uint64_t incrementLSN() {
+    return MemWALlsn++;
+  }
+
+  std::ofstream wal_file;
+
+  // void ticker_routine() {
+  //       while (running) {
+  //           std::this_thread::sleep_for(std::chrono::seconds(1));
+  //           flush_buffer();
+  //       }
+  //   }
+
+  //   void flush_buffer() {
+  //       std::lock_guard<std::mutex> lock(buffer_mutex);
+  //       if (current_size > 0) {
+  //           std::ofstream file(filename, std::ios::app | std::ios::binary);
+  //           if (file.is_open()) {
+  //               file.write(wal_buffer.data(), current_size);
+  //               file.flush();
+  //               current_size = 0;
+  //           }
+  //       }
+  //   }
+
+  // void force_flush() {
+  //       flush_buffer();
+  //   }
 };
 
 } // namespace inmem

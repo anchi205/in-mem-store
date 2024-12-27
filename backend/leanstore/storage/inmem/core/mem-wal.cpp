@@ -4,6 +4,7 @@
 #include <sstream>
 #include <filesystem>
 #include <iostream>
+#include <cstring>
 
 namespace leanstore {
 namespace storage {
@@ -12,57 +13,52 @@ namespace inmem {
 MemWALManager::MemWALManager() {
     // Initialize with custom config values
     config.segment_prefix = "seg-";
-    config.wal_path = "/tmp/memwal";
+    config.wal_path = "/home/ayush/Documents/in-mem-store/memwal";
     config.wal_buffer_size = 1024 * 1024;  // 1MB buffer
     config.wal_segment_size = 64 * 1024 * 1024;  // 64MB segments
     config.wal_buffer_sync_ms = 200;
     MemWALlsn = 0;
 
-    // // Create WAL directory if it doesn't exist
-    // std::filesystem::create_directories(config.wal_path);
+    // Create WAL directory if it doesn't exist
+    std::filesystem::create_directories(config.wal_path);
     
-    // // Open initial WAL file
-    // std::string initial_wal_file = config.wal_path + "/" + config.segment_prefix + "1.wal";
-    // wal_file.open(initial_wal_file, std::ios::app | std::ios::binary);
+    // Open initial WAL file
+    std::string initial_wal_file = config.wal_path + "/" + config.segment_prefix + "1.wal";
+    wal_file.open(initial_wal_file, std::ios::app | std::ios::binary);
     
-    // if (!wal_file.is_open()) {
-    //     std::cerr << "Failed to open WAL file: " << initial_wal_file << std::endl;
-    // }
+    if (!wal_file.is_open()) {
+        std::cerr << "Failed to open WAL file: " << initial_wal_file << std::endl;
+    }
+
+    // ticker_thread = std::thread(&WALManager::ticker_routine, this);
 }
 
+std::string structureWALEntry(memWalWrite entry) {
+  std::string wal_entry = "";
+  wal_entry += std::to_string(entry.lsn) + " ";
+  wal_entry += "ns-" + std::to_string(entry.namespace_id) + " ";
+  wal_entry += entry.payload;
+  wal_entry += std::to_string(entry.crc) + "\n";
+
+  return wal_entry;
+}
 
 void MemWALManager::writeMemWALEntry(const std::string& ns_str) {
-  std::string filename = "/home/ayush/Documents/in-mem-store/namespace_log.txt";
-  std::ofstream outfile;
-  outfile.open(filename, std::ios::app); // Append mode
-  if (outfile.is_open()) {
-    outfile << ns_str << std::endl;
-    outfile.close();
-  }
+    if (!wal_file.is_open()) {
+        return;
+    }
+
+    memWalWrite wal_entry;
+    wal_entry.lsn = getCurrentLSN();
+    incrementLSN();
+    wal_entry.namespace_id = std::stoul(ns_str); // Convert string namespace to uint32_t
+    strncpy(wal_entry.payload, "WRITE ", sizeof(wal_entry.payload) - 1);
+    wal_entry.payload[sizeof(wal_entry.payload) - 1] = '\0';
+    wal_entry.crc = 20;
+    
+
+    wal_file << structureWALEntry(wal_entry);
 }
-
-// void MemWALManager::writeMemWALEntry() {
-//     if (!wal_file.is_open()) {
-//         return;
-//     }
-
-//     // Get current timestamp
-//     auto now = std::chrono::system_clock::now();
-//     auto now_time = std::chrono::system_clock::to_time_t(now);
-    
-//     // Create WAL entry
-//     std::stringstream entry;
-//     entry << "LSN:" << ++MemWALlsn << "|";
-//     entry << "TIME:" << std::put_time(std::localtime(&now_time), "%Y-%m-%d %H:%M:%S") << "\n";
-    
-//     wal_file << entry.str();
-//     wal_file.flush();
-
-//     // Check if we need to rotate segment
-//     if (wal_file.tellp() >= static_cast<std::streampos>(config.wal_segment_size)) {
-//         rotateSegment();
-//     }
-// }
 
 // void MemWALManager::recoverMemWALEntries() {
 //     // Scan WAL directory for segment files

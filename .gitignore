@@ -23,3 +23,4 @@ leanstire_ssd_file
 leanstore_ssd_file
 store/
 namespace_log.txt
+memwal/
