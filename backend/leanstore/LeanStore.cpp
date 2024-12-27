@@ -27,7 +27,9 @@
 
 #include <locale>
 #include <sstream>
+#include <filesystem>
 // -------------------------------------------------------------------------------------
+namespace fs = std::filesystem;
 using namespace tabulate;
 using leanstore::utils::threadlocal::sum;
 namespace rs = rapidjson;
@@ -54,6 +56,13 @@ LeanStore::LeanStore()
    if (FLAGS_isolation_level == "si" && (!FLAGS_mv | !FLAGS_vi)) {
       SetupFailed("You have to enable mv an vi (multi-versioning)");
    }
+
+   // Create AOF directory if it doesn't exist
+   std::string aof_dir = "/home/ayush/Documents/in-mem-store/aof";
+   if (!fs::exists(aof_dir)) {
+      fs::create_directories(aof_dir);
+   }
+
    // -------------------------------------------------------------------------------------
    // Set the default logger to file logger
    // Init SSD pool
@@ -258,8 +267,14 @@ storage::inmem::Inmem& LeanStore::registerInmem(string name, storage::inmem::Inm
    assert(inmems.find(name) == inmems.end());
    auto& inmem = inmems[name];
    DTID dtid = DTRegistry::global_dt_registry.registerDatastructureInstance(0, reinterpret_cast<void*>(&inmem), name);
+   
+   // Configure AOF directory for this instance
+   // config.aof_directory = fs::path("/home/ayush/Documents/in-mem-store/aof") ;
+   // if (!fs::exists(config.aof_directory)) {
+   //    fs::create_directories(config.aof_directory);
+   // }
+   
    inmem.create(dtid, config);
-   // need-to-change
    return inmem;
 }
 // -------------------------------------------------------------------------------------

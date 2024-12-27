@@ -1,5 +1,5 @@
 #include "InmemGeneric.hpp"
-
+#include "aof.hpp"
 #include "leanstore/Config.hpp"
 #include "leanstore/profiling/counters/WorkerCounters.hpp"
 #include "leanstore/storage/buffer-manager/BufferManager.hpp"
@@ -14,8 +14,15 @@ void InmemGeneric::create(DTID dtid, Config config)
 {
    this->dt_id = dtid;
    this->config = config;
-   wal_manager = MemWALManager();
-   // TODO: write WALs
+   // wal_manager = MemWALManager();
+
+   // Initialize AOF if enabled
+   if (config.enable_aof) {
+      aof = std::make_unique<AOF>(config.aof_directory);
+      if (!aof->Init()) {
+         throw std::runtime_error("Failed to initialize AOF");
+      }
+   }
 }
 
 }  // namespace leanstore::storage::inmem

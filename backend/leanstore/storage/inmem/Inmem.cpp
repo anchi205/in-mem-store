@@ -49,7 +49,7 @@ OP_RESULT Inmem::lookup(u8* key, u16 key_length, function<void(const u8*, u16)> 
          }
          auto& active_tx_ns = cr::activeTX().getNamespace();
          std::string namespace_id = to_string(active_tx_ns);
-         wal_manager.writeMemWALEntry(namespace_id);
+         // wal_manager.writeMemWALEntry(namespace_id);
          return OP_RESULT::NOT_FOUND;
       }
       catch(...)
@@ -84,7 +84,7 @@ OP_RESULT Inmem::scanAsc(u8* start_key,
       }
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      wal_manager.writeMemWALEntry(namespace_id);
+      // wal_manager.writeMemWALEntry(namespace_id);
       return OP_RESULT::OK;
    }
    jumpmuCatch() {}
@@ -113,7 +113,7 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(cons
       }
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      wal_manager.writeMemWALEntry(namespace_id);
+      // wal_manager.writeMemWALEntry(namespace_id);
       return OP_RESULT::OK;
    }
    jumpmuCatch() {}
@@ -167,13 +167,23 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       lru_list.push_front(key_vec);
       lru_map[key_str] = lru_list.begin();
 
-
-
-      // ns-wal-do
+      // Log to AOF if enabled
+      if (config.enable_aof && aof) {
+         std::vector<uint8_t> command_data;
+         // Format: [command_type(1) | key_length(2) | value_length(2) | key | value]
+         command_data.push_back(1); // 1 for insert
+         command_data.push_back(key_length & 0xFF);
+         command_data.push_back((key_length >> 8) & 0xFF);
+         command_data.push_back(value_length & 0xFF);
+         command_data.push_back((value_length >> 8) & 0xFF);
+         command_data.insert(command_data.end(), key, key + key_length);
+         command_data.insert(command_data.end(), value, value + value_length);
+         aof->LogCommand(command_data);
+      }
 
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      wal_manager.writeMemWALEntry(namespace_id);
+      // wal_manager.writeMemWALEntry(namespace_id);
 
       return OP_RESULT::OK;
    }
@@ -210,12 +220,12 @@ OP_RESULT Inmem::updateSameSizeInPlace(u8* key,
          store.insert({KeyValue(key, key_length, new_value.data(), new_value.size()), nullptr});
          auto& active_tx_ns = cr::activeTX().getNamespace();
          std::string namespace_id = to_string(active_tx_ns);
-         wal_manager.writeMemWALEntry(namespace_id);
+         // wal_manager.writeMemWALEntry(namespace_id);
          return OP_RESULT::OK;
       }
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      wal_manager.writeMemWALEntry(namespace_id);
+      // wal_manager.writeMemWALEntry(namespace_id);
       return OP_RESULT::NOT_FOUND;
    }
    catch(...) {}
@@ -236,14 +246,26 @@ OP_RESULT Inmem::remove(u8* key, u16 key_length)
       auto it = store.find(KeyValue(key, key_length, nullptr, 0));
       if (it != store.end()) {
          store.erase(it);
+
+         // Log to AOF if enabled
+         if (config.enable_aof && aof) {
+            std::vector<uint8_t> command_data;
+            // Format: [command_type(1) | key_length(2) | key]
+            command_data.push_back(2); // 2 for remove
+            command_data.push_back(key_length & 0xFF);
+            command_data.push_back((key_length >> 8) & 0xFF);
+            command_data.insert(command_data.end(), key, key + key_length);
+            aof->LogCommand(command_data);
+         }
+
          auto& active_tx_ns = cr::activeTX().getNamespace();
          std::string namespace_id = to_string(active_tx_ns);
-         wal_manager.writeMemWALEntry(namespace_id);
+         // wal_manager.writeMemWALEntry(namespace_id);
          return OP_RESULT::OK;
       }
       auto& active_tx_ns = cr::activeTX().getNamespace();
       std::string namespace_id = to_string(active_tx_ns);
-      wal_manager.writeMemWALEntry(namespace_id);
+      // wal_manager.writeMemWALEntry(namespace_id);
       return OP_RESULT::NOT_FOUND;
    }
    jumpmuCatch() {}
