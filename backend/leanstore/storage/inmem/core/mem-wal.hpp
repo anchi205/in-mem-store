@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 #include <atomic>
+#include <algorithm>
 
 namespace leanstore {
 namespace storage {
@@ -37,35 +38,35 @@ public:
   uint64_t MemWALlsn = 0;
   // std::string currentMemWALFile = "wal-1.txt"
 
-  MemWALManager();
+  
   // set config here in this method
 
   void writeMemWALEntry(const std::string& ns_str);
   void recoverMemWALEntries(); // takes array of namespaces
   void closeMemWAL();
-
+  MemWALManager();
   
-
-private:
-  static const size_t BUFFER_SIZE = 16 * 1024 * 1024; // 16MB
-  std::vector<memWalWrite> wal_buffer;
-
   // std::atomic<bool> running;
   // std::thread ticker_thread;
   // std::mutex buffer_mutex;
 
-  size_t current_size;
-  std::string filename;
-  // size_t current_size;
 
-  // char wal_buffer[16 * 1024 * 1024]; // 16 MB buffer
-  // size_t buffer_pos = 0; // Current position in buffer
-  // int currSegment = 1;
+private:
+  static const int BUFFER_SIZE = 16 * 1024 * 1024; // 16MB
+  std::vector<memWalWrite> wal_buffer;  
+  
+  // in init function
+  int max_wal_buffer_size;
+
+
+  // statys same for now
+  std::string filename;
 
   void changeWALFile();
   void rotateSegment();
   void deleteOldSegment();
   void SyncBuffer();
+  std::string structureWALEntry(memWalWrite en);
   uint64_t getCurrentLSN() const {
     return MemWALlsn;
   }
@@ -76,30 +77,57 @@ private:
 
   std::ofstream wal_file;
 
-  // void ticker_routine() {
-  //       while (running) {
-  //           std::this_thread::sleep_for(std::chrono::seconds(1));
-  //           flush_buffer();
-  //       }
-  //   }
+  void ticker_routine() {
+        // while (running) {
+        //     std::this_thread::sleep_for(std::chrono::seconds(1));
+        //     flush_buffer();
+        // }
+    }
 
-  //   void flush_buffer() {
-  //       std::lock_guard<std::mutex> lock(buffer_mutex);
-  //       if (current_size > 0) {
-  //           std::ofstream file(filename, std::ios::app | std::ios::binary);
-  //           if (file.is_open()) {
-  //               file.write(wal_buffer.data(), current_size);
-  //               file.flush();
-  //               current_size = 0;
-  //           }
-  //       }
-  //   }
+  void flush_buffer() {
+      if (!wal_file.is_open() || wal_buffer.empty()) {
+          return;
+      }
+      std::vector<std::string> strs;
+      strs.resize(wal_buffer.size());
+      
+      std::transform(wal_buffer.begin(), wal_buffer.end(), strs.begin(),
+          [this](const memWalWrite& entry) { return this->structureWALEntry(entry); });
 
-  // void force_flush() {
-  //       flush_buffer();
-  //   }
+      wal_buffer.clear();
+      wal_buffer.resize(0);
+
+    std::string filename = "/home/ayush/Documents/in-mem-store/memwal/seg-1.wal";
+    std::ofstream outfile;
+    outfile.open(filename, std::ios::app); // Append mode
+    if (outfile.is_open()) {
+      for(int i = 0 ; i < strs.size(); i++) {
+        outfile << strs[i] << "\n" ;
+      }
+        
+        outfile.close();
+    }
+
+  }
+
+    
+
+  void force_flush() {
+        // flush_buffer();
+    }
 };
 
 } // namespace inmem
 } // namespace storage
 } // namespace leanstore
+
+// Write namespace to file in parent directory
+// void writeNamespaceToFile(const std::string& ns_str) {
+//    std::string filename = "/home/ayush/Documents/in-mem-store/namespace_log.txt";
+//    std::ofstream outfile;
+//    outfile.open(filename, std::ios::app); // Append mode
+//    if (outfile.is_open()) {
+//       outfile << ns_str << std::endl;
+//       outfile.close();
+//    }
+// }
