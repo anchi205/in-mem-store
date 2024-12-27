@@ -36,7 +36,7 @@ public:
   
   MemWALConfig config;
   uint64_t MemWALlsn = 0;
-  // std::string currentMemWALFile = "wal-1.txt"
+  int currentSegment;
 
   
   // set config here in this method

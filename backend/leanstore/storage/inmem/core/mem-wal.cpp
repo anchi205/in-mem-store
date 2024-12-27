@@ -18,13 +18,14 @@ MemWALManager::MemWALManager() {
     config.wal_segment_size = 64 * 1024 * 1024;  // 64MB segments
     config.wal_buffer_sync_ms = 200;
     MemWALlsn = 0;
+    currentSegment = 1;
     max_wal_buffer_size = BUFFER_SIZE / 32;
     // wal_buffer.resize(BUFFER_SIZE/ 32);
     // Create WAL directory if it doesn't exist
     std::filesystem::create_directories(config.wal_path);
     
     // Open initial WAL file
-    std::string initial_wal_file = config.wal_path + "/" + config.segment_prefix + "1.wal";
+    std::string initial_wal_file = config.wal_path + "/" + config.segment_prefix + std::to_string(currentSegment) + ".wal";
     wal_file.open(initial_wal_file, std::ios::app | std::ios::binary);
     
     if (!wal_file.is_open()) {
@@ -54,22 +55,21 @@ void MemWALManager::writeMemWALEntry(const std::string& ns_str) {
     wal_entry.payload[sizeof(wal_entry.payload) - 1] = '\0';
     wal_entry.crc = 20;
     
-    // Check if we have enough space in the buffer
     size_t entry_size = sizeof(memWalWrite);
     if (wal_buffer.size()  >= max_wal_buffer_size) {
-        // Buffer is full, flush it to disk
-        flush_buffer();
-
+        rotateSegment();
     }
 
     // Add entry to buffer
     wal_buffer.push_back(wal_entry);
+}
 
-    // If buffer is getting full (e.g., 80% capacity), trigger a flush
-    // maybe-look-here
-    // if (current_size >= (max_wal_buffer_size * 0.8)) {
-    //     flush_buffer();
-    // }
+void MemWALManager::rotateSegment() {
+    flush_buffer();
+    wal_file.close();
+    currentSegment++;
+    std::string new_segment = config.wal_path + "/" + config.segment_prefix + std::to_string(currentSegment) + ".wal";
+    wal_file.open(new_segment, std::ios::app | std::ios::binary);
 }
 
 // void MemWALManager::recoverMemWALEntries() {
