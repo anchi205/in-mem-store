@@ -43,7 +43,7 @@ struct Transaction {
    bool is_read_only = false;
    bool has_wrote = false;
    bool wal_larger_than_buffer = false;
-   unsigned int namespace_id;
+   uint64_t namespace_id;
    // -------------------------------------------------------------------------------------
    struct {
       std::chrono::high_resolution_clock::time_point start, precommit, commit;
@@ -55,6 +55,8 @@ struct Transaction {
    bool isReadOnly() { return is_read_only; }
    bool hasWrote() { return has_wrote; }
    bool isDurable() { return is_durable; }
+   uint64_t& getNamespace() { return namespace_id; }
+   void setNamespace(uint64_t ns) { namespace_id = ns; }
    bool atLeastSI() { return current_tx_isolation_level >= TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION; }
    bool isSI() { return current_tx_isolation_level == TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION; }
    bool isReadCommitted() { return current_tx_isolation_level == TX_ISOLATION_LEVEL::READ_COMMITTED; }

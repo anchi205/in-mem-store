@@ -26,6 +26,9 @@ Install dependencies:
 
 Check `build/frontend/tpcc --help` for other options.
 
+### Recovery benchmark
+`sudo build/frontend/recovery_benchmark --ssd_path=./leanstore_ssd_file --worker_threads=6 --entries_per_namespace=100000 --num_namespaces=5 `
+
 ### YCSB
 `sudo build/frontend/tpcc --target_gib=10 --ssd_path=./leanstore_ssd_file --worker_threads=16 --pp_threads=4 --dram_gib=5 --csv_path=./log --free_pct=1 --contention_split --xmerge --print_tx_console --run_for_seconds=60 --isolation_level=si`
 check `build/frontend/ycsb --help` for other options
