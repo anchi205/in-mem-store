@@ -1,4 +1,4 @@
-#include "../shared/LeanStoreAdapter.hpp"
+#include "../shared/LeanStoreAdapterInmem.hpp"
 #include "Schema.hpp"
 #include "TPCCWorkload.hpp"
 // -------------------------------------------------------------------------------------
@@ -53,31 +53,31 @@ int main(int argc, char** argv)
    ensure(FLAGS_ch_a_threads < FLAGS_worker_threads);
    // -------------------------------------------------------------------------------------
    LeanStore db;
-   LeanStoreAdapter<warehouse_t> warehouse;
-   LeanStoreAdapter<district_t> district;
-   LeanStoreAdapter<customer_t> customer;
-   LeanStoreAdapter<customer_wdl_t> customerwdl;
-   LeanStoreAdapter<history_t> history;
-   LeanStoreAdapter<neworder_t> neworder;
-   LeanStoreAdapter<order_t> order;
-   LeanStoreAdapter<order_wdc_t> order_wdc;
-   LeanStoreAdapter<orderline_t> orderline;
-   LeanStoreAdapter<item_t> item;
-   LeanStoreAdapter<stock_t> stock;
+   LeanStoreAdapterInmem<warehouse_t> warehouse;
+   LeanStoreAdapterInmem<district_t> district;
+   LeanStoreAdapterInmem<customer_t> customer;
+   LeanStoreAdapterInmem<customer_wdl_t> customerwdl;
+   LeanStoreAdapterInmem<history_t> history;
+   LeanStoreAdapterInmem<neworder_t> neworder;
+   LeanStoreAdapterInmem<order_t> order;
+   LeanStoreAdapterInmem<order_wdc_t> order_wdc;
+   LeanStoreAdapterInmem<orderline_t> orderline;
+   LeanStoreAdapterInmem<item_t> item;
+   LeanStoreAdapterInmem<stock_t> stock;
    auto& crm = db.getCRManager();
    // -------------------------------------------------------------------------------------
    crm.scheduleJobSync(0, [&]() {
-      warehouse = LeanStoreAdapter<warehouse_t>(db, "warehouse");
-      district = LeanStoreAdapter<district_t>(db, "district");
-      customer = LeanStoreAdapter<customer_t>(db, "customer");
-      customerwdl = LeanStoreAdapter<customer_wdl_t>(db, "customerwdl");
-      history = LeanStoreAdapter<history_t>(db, "history");
-      neworder = LeanStoreAdapter<neworder_t>(db, "neworder");
-      order = LeanStoreAdapter<order_t>(db, "order");
-      order_wdc = LeanStoreAdapter<order_wdc_t>(db, "order_wdc");
-      orderline = LeanStoreAdapter<orderline_t>(db, "orderline");
-      item = LeanStoreAdapter<item_t>(db, "item");
-      stock = LeanStoreAdapter<stock_t>(db, "stock");
+      warehouse = LeanStoreAdapterInmem<warehouse_t>(db, "warehouse");
+      district = LeanStoreAdapterInmem<district_t>(db, "district");
+      customer = LeanStoreAdapterInmem<customer_t>(db, "customer");
+      customerwdl = LeanStoreAdapterInmem<customer_wdl_t>(db, "customerwdl");
+      history = LeanStoreAdapterInmem<history_t>(db, "history");
+      neworder = LeanStoreAdapterInmem<neworder_t>(db, "neworder");
+      order = LeanStoreAdapterInmem<order_t>(db, "order");
+      order_wdc = LeanStoreAdapterInmem<order_wdc_t>(db, "order_wdc");
+      orderline = LeanStoreAdapterInmem<orderline_t>(db, "orderline");
+      item = LeanStoreAdapterInmem<item_t>(db, "item");
+      stock = LeanStoreAdapterInmem<stock_t>(db, "stock");
    });
    // -------------------------------------------------------------------------------------
    db.registerConfigEntry("tpcc_warehouse_count", FLAGS_tpcc_warehouse_count);
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
    leanstore::TX_ISOLATION_LEVEL isolation_level = leanstore::parseIsolationLevel(FLAGS_isolation_level);
    // -------------------------------------------------------------------------------------
    const bool should_tpcc_driver_handle_isolation_anomalies = isolation_level < leanstore::TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION;
-   TPCCWorkload<LeanStoreAdapter> tpcc(warehouse, district, customer, customerwdl, history, neworder, order, order_wdc, orderline, item, stock,
+   TPCCWorkload<LeanStoreAdapterInmem> tpcc(warehouse, district, customer, customerwdl, history, neworder, order, order_wdc, orderline, item, stock,
                                        FLAGS_order_wdc_index, FLAGS_tpcc_warehouse_count, FLAGS_tpcc_remove,
                                        should_tpcc_driver_handle_isolation_anomalies, FLAGS_tpcc_warehouse_affinity);
    // -------------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
    // -------------------------------------------------------------------------------------
    double gib = (db.getBufferManager().consumedPages() * EFFECTIVE_PAGE_SIZE / 1024.0 / 1024.0 / 1024.0);
    cout << "TPC-C loaded - consumed space in GiB = " << gib << endl;
-   crm.scheduleJobSync(0, [&]() { cout << "Warehouse pages = " << warehouse.btree->countPages() << endl; });
+   crm.scheduleJobSync(0, [&]() { cout << "Warehouse pages = " << warehouse.store->countPages() << endl; });
    // -------------------------------------------------------------------------------------
    atomic<u64> keep_running = true;
    atomic<u64> running_threads_counter = 0;

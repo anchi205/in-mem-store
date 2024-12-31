@@ -1,5 +1,5 @@
 #include "../shared/GenericSchema.hpp"
-#include "../shared/LeanStoreAdapter.hpp"
+#include "../shared/LeanStoreAdapterInmem.hpp"
 #include "Units.hpp"
 #include "leanstore/Config.hpp"
 #include "leanstore/LeanStore.hpp"
@@ -29,8 +29,8 @@ int main(int argc, char** argv)
    // -------------------------------------------------------------------------------------
    LeanStore db;
    auto& crm = db.getCRManager();
-   LeanStoreAdapter<KVTable> table;
-   crm.scheduleJobSync(0, [&]() { table = LeanStoreAdapter<KVTable>(db, "queue"); });
+   LeanStoreAdapterInmem<KVTable> table;
+   crm.scheduleJobSync(0, [&]() { table = LeanStoreAdapterInmem<KVTable>(db, "queue"); });
    // -------------------------------------------------------------------------------------
    const u64 N = FLAGS_target_gib * 1024 * 1024 * 1024 * 1.0 / 2.0 / (sizeof(Key) + sizeof(Payload));
    // Insert values

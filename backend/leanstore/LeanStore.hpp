@@ -5,6 +5,7 @@
 #include "leanstore/storage/btree/BTreeLL.hpp"
 #include "leanstore/storage/btree/BTreeVI.hpp"
 #include "leanstore/storage/buffer-manager/BufferManager.hpp"
+#include "leanstore/storage/inmem/Inmem.hpp"
 #include "rapidjson/document.h"
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
@@ -24,6 +25,7 @@ class LeanStore
    // Poor man catalog
    std::unordered_map<string, storage::btree::BTreeLL> btrees_ll;
    std::unordered_map<string, storage::btree::BTreeVI> btrees_vi;
+   std::unordered_map<string, storage::inmem::Inmem> inmems;
    // -------------------------------------------------------------------------------------
    s32 ssd_fd;
    // -------------------------------------------------------------------------------------
@@ -60,6 +62,8 @@ class LeanStore
    // -------------------------------------------------------------------------------------
    storage::btree::BTreeLL& registerBTreeLL(string name, const storage::btree::BTreeLL::Config config);
    storage::btree::BTreeLL& retrieveBTreeLL(string name) { return btrees_ll[name]; }
+   storage::inmem::Inmem& registerInmem(string name, const storage::inmem::Inmem::Config config);
+   storage::inmem::Inmem& retrieveInmem(string name) { return inmems[name]; }
    storage::btree::BTreeVI& registerBTreeVI(string name, const storage::btree::BTreeLL::Config config);
    storage::btree::BTreeVI& retrieveBTreeVI(string name)
    {

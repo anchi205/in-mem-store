@@ -1,4 +1,4 @@
-#include "../shared/LeanStoreAdapter.hpp"
+#include "../shared/LeanStoreAdapterInmem.hpp"
 #include "../shared/Schema.hpp"
 #include "Units.hpp"
 #include "leanstore/Config.hpp"
@@ -39,8 +39,8 @@ int main(int argc, char** argv)
    // Always init with the maximum number of threads (FLAGS_worker_threads)
    LeanStore db;
    auto& crm = db.getCRManager();
-   LeanStoreAdapter<KVTable> table;
-   crm.scheduleJobSync(0, [&]() { table = LeanStoreAdapter<KVTable>(db, "YCSB"); });
+   LeanStoreAdapterInmem<KVTable> table;
+   crm.scheduleJobSync(0, [&]() { table = LeanStoreAdapterInmem<KVTable>(db, "YCSB"); });
    // -------------------------------------------------------------------------------------
    leanstore::TX_ISOLATION_LEVEL isolation_level = leanstore::parseIsolationLevel(FLAGS_isolation_level);
    const TX_MODE tx_type = TX_MODE::OLTP;

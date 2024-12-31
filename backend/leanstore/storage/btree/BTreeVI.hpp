@@ -239,6 +239,7 @@ class BTreeVI : public BTreeLL
       BTreeLL::create(dtid, config);
    }
    // -------------------------------------------------------------------------------------
+   // ************************* NEEDS TO BE PORTED *************************
    static SpaceCheckResult checkSpaceUtilization(void* btree_object, BufferFrame&);
    static void undo(void* btree_object, const u8* wal_entry_ptr, const u64 tx_id);
    static void todo(void* btree_object, const u8* entry_ptr, const u64 version_worker_id, const u64 version_tx_id, const bool called_before);
@@ -251,6 +252,7 @@ class BTreeVI : public BTreeLL
       return BTreeGeneric::serialize(*static_cast<BTreeGeneric*>(reinterpret_cast<BTreeVI*>(btree_object)));
    }
    static DTRegistry::DTMeta getMeta();
+   // ************************* NEEDS TO BE PORTED END *************************
    // -------------------------------------------------------------------------------------
    struct UnlockEntry {
       u16 key_length;  // SN always = 0
