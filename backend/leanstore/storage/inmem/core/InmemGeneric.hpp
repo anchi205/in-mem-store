@@ -5,6 +5,7 @@
 #include "leanstore/storage/buffer-manager/BufferManager.hpp"
 #include "leanstore/sync-primitives/PageGuard.hpp"
 #include "leanstore/utils/RandomGenerator.hpp"
+#include "leanstore/storage/inmem/aof.hpp"
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
@@ -53,8 +54,14 @@ class InmemGeneric
       bool use_bulk_insert = false;
    };
    Config config;
+   std::unique_ptr<AOF> aof;  // AOF instance for WAL
    // -------------------------------------------------------------------------------------
    InmemGeneric() = default;
+   virtual ~InmemGeneric() {
+      if (aof) {
+         aof->setStop(true);
+      }
+   }
    // -------------------------------------------------------------------------------------
    void create(DTID dtid, Config config);
 
