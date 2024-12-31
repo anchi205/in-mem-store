@@ -17,6 +17,61 @@ namespace inmem
 {
 // -------------------------------------------------------------------------------------
 
+void Inmem::logOperation(uint64_t namespace_id, WALRecordType type, const std::vector<u8>& data) {
+   if (config.enable_wal && aof) {
+      // Prepare WAL entry data with type
+      std::vector<u8> wal_data;
+      wal_data.push_back(static_cast<u8>(type));  // First byte is the record type
+      wal_data.insert(wal_data.end(), data.begin(), data.end());
+      aof->LogCommand(namespace_id, wal_data);
+   }
+}
+
+void Inmem::replayOperation(uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
+    // Set the current transaction's namespace
+    auto& tx = cr::activeTX();
+    tx.setNamespace(namespace_id);
+
+    switch (type) {
+        case WALRecordType::INSERT: {
+            store.insert({KeyValue(key, key_length, value, value_length), nullptr});
+            break;
+        }
+        case WALRecordType::UPDATE: {
+            auto it = store.find(KeyValue(key, key_length, nullptr, 0));
+            if (it != store.end()) {
+                store.erase(it);
+                store.insert({KeyValue(key, key_length, value, value_length), nullptr});
+            }
+            break;
+        }
+        case WALRecordType::REMOVE: {
+            store.erase(KeyValue(key, key_length, nullptr, 0));
+            break;
+        }
+    }
+}
+
+bool Inmem::StartRecovery() {
+    if (!config.enable_wal || !aof) {
+        return true;
+    }
+
+    return aof->StartRecovery([this](uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
+        replayOperation(namespace_id, type, key, key_length, value, value_length);
+    });
+}
+
+bool Inmem::RecoverNamespace(uint64_t namespace_id) {
+    if (!config.enable_wal || !aof) {
+        return true;
+    }
+
+    return aof->ReplayNamespace(namespace_id, [this](uint64_t ns_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
+        replayOperation(ns_id, type, key, key_length, value, value_length);
+    });
+}
+
 OP_RESULT Inmem::lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback)
 {
    while (true) {
@@ -96,12 +151,25 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(cons
 
 // -------------------------------------------------------------------------------------
 
-// maybe come back
 OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
 {
    cr::activeTX().markAsWrite();
    if (config.enable_wal) {
       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
+      
+      auto& active_tx_ns = cr::activeTX().getNamespace();
+      uint64_t namespace_id = active_tx_ns;
+
+      // Log the insert operation
+      std::vector<u8> log_data;
+      log_data.reserve(sizeof(u16) + key_length + sizeof(u16) + value_length);
+      // Add key length and key
+      log_data.insert(log_data.end(), reinterpret_cast<u8*>(&key_length), reinterpret_cast<u8*>(&key_length) + sizeof(u16));
+      log_data.insert(log_data.end(), key, key + key_length);
+      // Add value length and value
+      log_data.insert(log_data.end(), reinterpret_cast<u8*>(&value_length), reinterpret_cast<u8*>(&value_length) + sizeof(u16));
+      log_data.insert(log_data.end(), value, value + value_length);
+      logOperation(namespace_id, WALRecordType::INSERT, log_data);
    }
    
    try
@@ -158,7 +226,6 @@ OP_RESULT Inmem::updateSameSizeInPlace(u8* key,
    if (config.enable_wal) {
       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
    }
-   // Slice key(o_key, o_key_length);
    try
    {
       auto it = store.find(KeyValue(key, key_length, nullptr, 0));
@@ -166,6 +233,23 @@ OP_RESULT Inmem::updateSameSizeInPlace(u8* key,
          // Create a copy of the value, update it, then replace
          std::vector<u8> new_value = it->first.value;
          callback(new_value.data(), new_value.size());
+         
+         auto& active_tx_ns = cr::activeTX().getNamespace();
+         uint64_t namespace_id = active_tx_ns;
+
+         if (config.enable_wal) {
+            // Log the update operation
+            std::vector<u8> log_data;
+            log_data.reserve(sizeof(u16) + key_length + sizeof(u16) + new_value.size());
+            // Add key length and key
+            log_data.insert(log_data.end(), reinterpret_cast<u8*>(&key_length), reinterpret_cast<u8*>(&key_length) + sizeof(u16));
+            log_data.insert(log_data.end(), key, key + key_length);
+            // Add value length and value
+            u16 value_length = new_value.size();
+            log_data.insert(log_data.end(), reinterpret_cast<u8*>(&value_length), reinterpret_cast<u8*>(&value_length) + sizeof(u16));
+            log_data.insert(log_data.end(), new_value.begin(), new_value.end());
+            logOperation(namespace_id, WALRecordType::UPDATE, log_data);
+         }
          
          // Remove old and insert new
          store.erase(it);
@@ -191,6 +275,23 @@ OP_RESULT Inmem::remove(u8* key, u16 key_length)
    {
       auto it = store.find(KeyValue(key, key_length, nullptr, 0));
       if (it != store.end()) {
+         auto& active_tx_ns = cr::activeTX().getNamespace();
+         uint64_t namespace_id = active_tx_ns;
+
+         if (config.enable_wal) {
+            // Log the remove operation
+            std::vector<u8> log_data;
+            log_data.reserve(sizeof(u16) + key_length + sizeof(u16) + it->first.value.size());
+            // Add key length and key
+            log_data.insert(log_data.end(), reinterpret_cast<u8*>(&key_length), reinterpret_cast<u8*>(&key_length) + sizeof(u16));
+            log_data.insert(log_data.end(), key, key + key_length);
+            // Add value length and value (for potential undo)
+            u16 value_length = it->first.value.size();
+            log_data.insert(log_data.end(), reinterpret_cast<u8*>(&value_length), reinterpret_cast<u8*>(&value_length) + sizeof(u16));
+            log_data.insert(log_data.end(), it->first.value.begin(), it->first.value.end());
+            logOperation(namespace_id, WALRecordType::REMOVE, log_data);
+         }
+         
          store.erase(it);
          return OP_RESULT::OK;
       }
@@ -208,7 +309,7 @@ u64 Inmem::countPages() {
 }
 
 u64 Inmem::countEntries() {
-   return 0; // Or implement actual entry counting logic
+   return store.size();
 }
 
 u64 Inmem::getHeight() {
@@ -219,3 +320,8 @@ u64 Inmem::getHeight() {
 }  // namespace btree
 }  // namespace storage
 }  // namespace leanstore
+
+
+// auto& active_tx_ns = cr::activeTX().getNamespace();
+// std::string namespace_id = to_string(active_tx_ns);
+// // wal_manager.writeMemWALEntry(namespace_id);

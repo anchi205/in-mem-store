@@ -6,6 +6,7 @@
 #include "leanstore/storage/buffer-manager/BufferManager.hpp"
 #include "leanstore/sync-primitives/PageGuard.hpp"
 #include "leanstore/utils/RandomGenerator.hpp"
+#include "leanstore/storage/inmem/aof.hpp"
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
@@ -21,35 +22,15 @@ namespace inmem
 // -------------------------------------------------------------------------------------
 class Inmem : public KVInterface, public InmemGeneric
 {
-  // ************************* NEEDS TO BE PORTED *************************
   public:
-   struct WALBeforeAfterImage : WALEntry {
-      u16 image_size;
-      u8 payload[];
-   };
-   struct WALAfterImage : WALEntry {
-      u16 image_size;
-      u8 payload[];
-   };
-   struct WALInsert : WALEntry {
-      u16 key_length;
-      u16 value_length;
-      u8 payload[];
-   };
-   struct WALUpdate : WALEntry {
-      u16 key_length;
-      u16 delta_length;
-      u8 payload[];
-   };
-   struct WALRemove : WALEntry {
-      u16 key_length;
-      u16 value_length;
-      u8 payload[];
-   };
    // -------------------------------------------------------------------------------------
    Inmem() = default;
+   ~Inmem() {
+      if (aof) {
+         aof->setStop(true);
+      }
+   }
    // -------------------------------------------------------------------------------------
-   // ************************* NEEDS TO BE PORTED *************************
    virtual OP_RESULT lookup(u8* key, u16 key_length, std::function<void(const u8*, u16)> payload_callback) override;
    virtual OP_RESULT insert(u8* key, u16 key_length, u8* value, u16 value_length) override;
    virtual OP_RESULT updateSameSizeInPlace(u8* key,
@@ -67,11 +48,15 @@ class Inmem : public KVInterface, public InmemGeneric
                               std::function<void()>) override;
    // -------------------------------------------------------------------------------------
    void getMeta(){};
-// -------------------------------------------------------------------------------------
+   // -------------------------------------------------------------------------------------
    virtual u64 countPages() override;
    virtual u64 countEntries() override;
    virtual u64 getHeight() override;
 
+   // Recovery methods
+   bool StartRecovery();
+   bool RecoverNamespace(uint64_t namespace_id);
+   void replayOperation(uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length);
 
    private:
       struct KeyValue {
@@ -110,17 +95,11 @@ class Inmem : public KVInterface, public InmemGeneric
       };
 
       std::map<KeyValue, std::nullptr_t, KeyCompare> store;
-      // mutable std::mutex mutex;
       std::list<std::vector<u8>> lru_list;
       std::unordered_map<std::string, std::list<std::vector<u8>>::iterator> lru_map;
       const size_t MAX_STORE_SIZE = 1000000;  // Default max size
 
-
-   // virtual OP_RESULT prefixLookup(u8* key, u16 key_length, std::function<void(const u8*, u16, const u8*, u16)> payload_callback) override;
-   // virtual OP_RESULT prefixLookupForPrev(u8* key, u16 key_length, std::function<void(const u8*, u16, const u8*, u16)> payload_callback) override;
-   // virtual OP_RESULT append(std::function<void(u8*)>, u16, std::function<void(u8*)>, u16, std::unique_ptr<u8[]>&) override;
-   // virtual OP_RESULT rangeRemove(u8* start_key, u16 start_key_length, u8* end_key, u16 end_key_length, bool page_used) override;
-   // bool isRangeSurelyEmpty(Slice start_key, Slice end_key);
+      void logOperation(uint64_t namespace_id, WALRecordType type, const std::vector<u8>& data);
 };
 // -------------------------------------------------------------------------------------
 }  // namespace inmem
