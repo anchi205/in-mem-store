@@ -20,6 +20,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "leanstore/LeanStore.hpp"
+#include "leanstore/Config.hpp"
+#include "../../shared-headers/Units.hpp"
+#include <thread>
 
 using namespace std;
 using namespace leanstore;
@@ -29,6 +33,11 @@ LeanStoreAdapterInmem<kv_t> kv_table;
 // -------------------------------------------------------------------------------------
 #include "workload.hpp"
 // -------------------------------------------------------------------------------------
+
+DEFINE_uint32(num_namespaces, 5, "Number of namespaces to use");
+DEFINE_uint64(entries_per_namespace, 100000, "Number of entries per namespace");
+DEFINE_string(verification_file, "verification.txt", "File to store verification data");
+DEFINE_bool(recover, false, "Recover from existing database");
 
 void setup(LeanStore& db)
 {
@@ -64,23 +73,50 @@ void runRecoveryBenchmark(LeanStore& db)
 
 int main(int argc, char** argv)
 {
-   gflags::SetUsageMessage("Leanstore Recovery Benchmark");
+   gflags::SetUsageMessage("Recovery Benchmark\nUsage: sudo ./recovery_benchmark --ssd_path=./leanstore_ssd_file --worker_threads=6 --entries_per_namespace=100000 --num_namespaces=5");
    gflags::ParseCommandLineFlags(&argc, &argv, true);
-   std::string program_name = argv[0];
    
-   {
-      LeanStore db;
-      setup(db);
+   LeanStore db;
+   
+   if (!FLAGS_recover) {
+      std::cout << "=== Initial Data Load ===\n";
+      std::cout << "Namespaces: " << FLAGS_num_namespaces << "\n";
+      std::cout << "Entries per namespace: " << FLAGS_entries_per_namespace << "\n";
+      std::cout << "Total entries: " << (FLAGS_num_namespaces * FLAGS_entries_per_namespace) << "\n";
       
-      if (true) {
-         std::cout << "\n=== Starting Recovery Benchmark ===\n";
+      RecoveryWorkload workload(FLAGS_verification_file);
+      auto& adapter = db.registerAdapter<RecoveryEntry>("recovery_data");
+      
+      workload.loadData(adapter);
+      
+      if (workload.verifyData(adapter)) {
+         std::cout << "Initial verification successful\n";
       } else {
-         std::cout << "\n=== Starting Initial Data Load ===\n";
+         std::cout << "Initial verification failed\n";
+         return 1;
       }
+
+      std::cout << "\nData loaded and verified. Run with --recover to test recovery.\n";
+      std::cout << "Example: " << argv[0] << " --recover"
+                << " --ssd_path=./leanstore_ssd_file"
+                << " --worker_threads=6"
+                << " --num_namespaces=" << FLAGS_num_namespaces
+                << " --entries_per_namespace=" << FLAGS_entries_per_namespace << "\n";
+   } else {
+      std::cout << "=== Recovery Mode ===\n";
+      RecoveryWorkload workload(FLAGS_verification_file);
+      auto& adapter = db.registerAdapter<RecoveryEntry>("recovery_data");
       
-      loadDB(db, program_name);
-      runRecoveryBenchmark(db);
-      std::cout << "Benchmark completed. Exiting..." << std::endl;
+      if (workload.verifyData(adapter)) {
+         std::cout << "Recovery verification successful\n";
+      } else {
+         std::cout << "Recovery verification failed\n";
+         return 1;
+      }
    }
+
+   db.startProfilingThread();
+   std::this_thread::sleep_for(std::chrono::seconds(2));
+   
    return 0;
 } 
