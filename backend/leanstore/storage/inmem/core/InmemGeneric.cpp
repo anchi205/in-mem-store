@@ -18,7 +18,7 @@ void InmemGeneric::create(DTID dtid, Config config)
    this->config = config;
    
    if (config.enable_wal) {
-      std::string log_dir = "/home/anchita20/Documents/in-mem-store/walaof/" + std::to_string(dtid);
+      std::string log_dir = "/home/anchita20/Desktop/in-mem-store/walaof/" + std::to_string(dtid);
       try {
          aof = std::make_unique<AOF>(log_dir);
          if (!aof->Init()) {
