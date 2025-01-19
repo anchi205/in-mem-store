@@ -28,11 +28,25 @@ Integer rnd(Integer n)
 // -------------------------------------------------------------------------------------
 void loadNamespace(u64 ns_id)
 {
+   u64 successful_inserts = 0;
+   u64 checksum = 0;
+   
    for (Integer i = 0; i < FLAGS_entries_per_namespace; i++) {
       Integer key = (ns_id * FLAGS_entries_per_namespace) + i;
-      kv_table.insert({key}, {rnd(1000000), ns_id});
+      Integer value = rnd(1000000);
+      checksum += value;
+      
+      try {
+         kv_table.insert({key}, {value, ns_id});
+         successful_inserts++;
+      } catch (const std::exception& e) {
+         std::cout << "Failed to insert key " << key << ": " << e.what() << std::endl;
+      }
    }
-   std::cout << "Loaded namespace: " << ns_id << std::endl;
+   
+   std::cout << "Namespace " << ns_id << " load complete:" << std::endl;
+   std::cout << "  - Successful inserts: " << successful_inserts << "/" << FLAGS_entries_per_namespace << std::endl;
+   std::cout << "  - Initial checksum: " << checksum << std::endl;
 }
 
 void loadData()
@@ -60,15 +74,32 @@ bool verifyNamespace(u64 ns_id)
 {
    bool success = true;
    u64 count = 0;
+   u64 checksum = 0;
    
    cr::Worker::my().startTX();
+   std::cout << "Verifying namespace " << ns_id << "..." << std::endl;
+   
    kv_table.scan(
       {},
       [&](const kv_t::Key& key, const kv_t& record) {
          if (record.namespace_id == ns_id) {
             count++;
-         }
-         return true;
+            checksum += record.value;  // Add value to checksum
+            
+            // Verify key range is correct for this namespace
+            if (key.key < (ns_id * FLAGS_entries_per_namespace) || 
+                key.key >= ((ns_id + 1) * FLAGS_entries_per_namespace)) {
+                std::cout << "Invalid key " << key.key << " found in namespace " << ns_id << std::endl;
+                success = false;
+            }
+            
+            // Verify value is in expected range
+            if (record.value > 1000000) {
+                std::cout << "Invalid value " << record.value << " found for key " << key.key << std::endl;
+                success = false;
+            }
+        }
+        return true;
       },
       [&]() {});
    cr::Worker::my().commitTX();
@@ -78,6 +109,11 @@ bool verifyNamespace(u64 ns_id)
                 << " entries, found " << count << std::endl;
       success = false;
    }
+   
+   std::cout << "Namespace " << ns_id << " stats:" << std::endl;
+   std::cout << "  - Entry count: " << count << std::endl;
+   std::cout << "  - Checksum: " << checksum << std::endl;
+   
    return success;
 }
 
