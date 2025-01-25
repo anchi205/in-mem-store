@@ -34,6 +34,10 @@ add_executable(recovery_benchmark recoveryBenchmark/main.cpp)
 target_link_libraries(recovery_benchmark leanstore Threads::Threads)
 target_include_directories(recovery_benchmark PRIVATE ${SHARED_INCLUDE_DIRECTORY})
 
+add_executable(wal_recovery_benchmark walRecoveryBenchmark/main.cpp)
+target_link_libraries(wal_recovery_benchmark leanstore Threads::Threads)
+target_include_directories(wal_recovery_benchmark PRIVATE ${SHARED_INCLUDE_DIRECTORY})
+
 # add_executable(namespace_recovery namespaceRecovery/main.cpp)
 # target_link_libraries(namespace_recovery leanstore Threads::Threads)
 # target_include_directories(namespace_recovery PRIVATE ${SHARED_INCLUDE_DIRECTORY})
