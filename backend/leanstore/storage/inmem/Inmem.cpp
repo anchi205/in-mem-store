@@ -30,7 +30,6 @@ void Inmem::logOperation(uint64_t namespace_id, WALRecordType type, const std::v
 void Inmem::replayOperation(uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
     // Set the current transaction's namespace
     auto& tx = cr::activeTX();
-    tx.setNamespace(namespace_id);
 
     switch (type) {
         case WALRecordType::INSERT: {
@@ -151,12 +150,14 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(cons
 
 // -------------------------------------------------------------------------------------
 
-OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length, uint64_t ns_id)
+OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
 {
    cr::activeTX().markAsWrite();
    if (config.enable_wal) {
       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
-      uint64_t namespace_id = ns_id;
+      auto& active_tx_ns = cr::activeTX().getNamespace();
+      uint64_t namespace_id = active_tx_ns;
+      std::cout << "this is the namespace right here - " << namespace_id << std::endl;
 
       // Log the insert operation
       std::vector<u8> log_data;

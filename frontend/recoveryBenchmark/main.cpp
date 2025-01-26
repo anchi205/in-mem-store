@@ -64,8 +64,13 @@ bool verifyDB(LeanStore& db) {
 
    // Insert the key-value pair within a scheduled worker thread
    db.getCRManager().scheduleJobSync(0, [&]() {
-       cr::Worker::my().startTX();
-       kv_table.insert({verify_key}, {verify_value, verify_ns_id});
+       cr::Worker::my().startTX(
+           leanstore::TX_MODE::OLTP, 
+           leanstore::TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, 
+           false, 
+           99  // Specific namespace ID
+       );
+       kv_table.insert({verify_key}, {verify_value});
        cr::Worker::my().commitTX();
    });
 

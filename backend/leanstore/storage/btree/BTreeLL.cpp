@@ -148,7 +148,7 @@ OP_RESULT BTreeLL::scanDesc(u8* start_key, u16 key_length, std::function<bool(co
    return OP_RESULT::OTHER;
 }
 // -------------------------------------------------------------------------------------
-OP_RESULT BTreeLL::insert(u8* o_key, u16 o_key_length, u8* o_value, u16 o_value_length, u64 ns)
+OP_RESULT BTreeLL::insert(u8* o_key, u16 o_key_length, u8* o_value, u16 o_value_length)
 {
    cr::activeTX().markAsWrite();
    if (config.enable_wal) {

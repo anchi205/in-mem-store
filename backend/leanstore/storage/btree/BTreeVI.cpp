@@ -391,7 +391,7 @@ OP_RESULT BTreeVI::updateSameSizeInPlace(u8* o_key,
    return OP_RESULT::OTHER;
 }
 // -------------------------------------------------------------------------------------
-OP_RESULT BTreeVI::insert(u8* o_key, u16 o_key_length, u8* value, u16 value_length, u64 ns_id)
+OP_RESULT BTreeVI::insert(u8* o_key, u16 o_key_length, u8* value, u16 value_length)
 {
    cr::activeTX().markAsWrite();
    cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
