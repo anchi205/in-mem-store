@@ -151,14 +151,12 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(cons
 
 // -------------------------------------------------------------------------------------
 
-OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
+OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length, uint64_t ns_id)
 {
    cr::activeTX().markAsWrite();
    if (config.enable_wal) {
       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
-      
-      auto& active_tx_ns = cr::activeTX().getNamespace();
-      uint64_t namespace_id = active_tx_ns;
+      uint64_t namespace_id = ns_id;
 
       // Log the insert operation
       std::vector<u8> log_data;
@@ -201,6 +199,7 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       }
 
       // Insert the new key-value pair
+      std::cout << "insert op hua kya??" << std::endl;
       store.insert({KeyValue(key, key_length, value, value_length), nullptr});
       std::string key_str(key_vec.begin(), key_vec.end());
       lru_list.push_front(key_vec);

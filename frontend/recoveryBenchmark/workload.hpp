@@ -45,6 +45,19 @@ void loadNamespace(u64 ns_id)
    u64 namespace_checksum = 0;
    std::vector<std::pair<Integer, u64>> entry_checksums;
    
+   // OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length, uint64_t ns_id)
+   // void insert(const typename Record::Key& key, const Record& record) override {
+   //    u8 key_bytes[sizeof(typename Record::Key)];
+   //    std::memcpy(key_bytes, &key, sizeof(typename Record::Key));
+      
+   //    auto result = store->insert(key_bytes, sizeof(typename Record::Key),
+   //                             reinterpret_cast<u8*>(const_cast<Record*>(&record)),
+   //                             sizeof(Record));
+   //    if (result != OP_RESULT::OK) {
+   //       throw std::runtime_error("Insert failed");
+   //    }
+   // }
+
    for (Integer i = 0; i < FLAGS_entries_per_namespace; i++) {
       Integer key = (ns_id * FLAGS_entries_per_namespace) + i;
       Integer value = rnd(1000000);
@@ -96,6 +109,7 @@ void loadNamespace(u64 ns_id)
    cr::Worker::my().commitTX();
    
    std::cout << "Namespace " << ns_id << " load complete:" << std::endl;
+   std::cout << "Namespace checksum - " << namespace_checksum << " : for namespace_id - " << ns_id << std::endl;
    std::cout << "  - Successful inserts: " << successful_inserts << "/" << FLAGS_entries_per_namespace << std::endl;
    std::cout << "  - Verification status: " << (verify_success ? "PASSED" : "FAILED") << std::endl;
    if (!verify_success || namespace_checksum != verify_checksum) {
@@ -111,6 +125,12 @@ void loadData()
       namespaces.push_back(i);
    }
 
+   std::cout << "These are the namespaces that are added: ";
+   for (int i = 0; i < FLAGS_num_namespaces; i++) {
+      cout << namespaces[i] << ", ";
+   }
+   cout << std::endl;
+
    for (u64 ns_id : namespaces) {
       cr::Worker::my().startTX();
       loadNamespace(ns_id);
@@ -118,11 +138,6 @@ void loadData()
    }
    total_entries = FLAGS_entries_per_namespace * FLAGS_num_namespaces;
 }
-
-
-// -------------------------------------------------------------------------------------
-// Recovery functions
-// -------------------------------------------------------------------------------------
 
 bool verifyNamespace(u64 ns_id)
 {
@@ -185,84 +200,3 @@ bool verifyNamespace(u64 ns_id)
    
    return success;
 }
-
-
-void performRecovery()
-{
-   std::cout << "Starting namespace-based recovery..." << std::endl;
-   
-   // Initialize namespace metadata
-   namespaces.clear();
-   for (int i = 0; i < FLAGS_num_namespaces; i++) {
-      namespaces.push_back(i);
-   }
-   
-   // Scan all records to rebuild namespace metadata
-   cr::Worker::my().startTX();
-   std::vector<u64> entries_per_ns(FLAGS_num_namespaces, 0);
-   
-   kv_table.scan(
-      {},
-      [&](const kv_t::Key& key, const kv_t& record) {
-         if (record.namespace_id < FLAGS_num_namespaces) {
-            entries_per_ns[record.namespace_id]++;
-         }
-         return true;
-      },
-      [&]() {});
-   
-   cr::Worker::my().commitTX();
-   
-   // Print recovery statistics
-   for (u64 ns_id = 0; ns_id < FLAGS_num_namespaces; ns_id++) {
-      std::cout << "Namespace " << ns_id << " recovered with " << entries_per_ns[ns_id] << " entries" << std::endl;
-   }
-   
-   std::cout << "Recovery process completed." << std::endl;
-}
-
-void startRecoveryTimer()
-{
-   recovery_start_time = steady_clock::now();
-}
-
-void stopRecoveryTimer()
-{
-   recovery_end_time = steady_clock::now();
-   auto duration = duration_cast<milliseconds>(recovery_end_time - recovery_start_time);
-   std::cout << "\nRecovery time: " << duration.count() << " milliseconds" << std::endl;
-}
-
-void verifyRecovery()
-{
-   bool all_success = true;
-   for (u64 ns_id : namespaces) {
-      if (!verifyNamespace(ns_id)) {
-         all_success = false;
-      }
-   }
-   if (all_success) {
-      std::cout << "All namespaces recovered successfully!" << std::endl;
-   } else {
-      std::cout << "Recovery verification failed for some namespaces." << std::endl;
-   }
-}
-
-void runRecovery()
-{
-   startRecoveryTimer();
-   performRecovery();
-   stopRecoveryTimer();
-   verifyRecovery();
-}
-
-
-
-
-// -------------------------------------------------------------------------------------
-// Benchmark functions
-// -------------------------------------------------------------------------------------
-void runOneQuery()
-{
-   // Not used in this benchmark
-} 

@@ -8,6 +8,7 @@
 #include <cstring>
 #include <functional>
 #include <string>
+#include <iostream>
 
 using namespace leanstore;
 template <class Record>
@@ -77,7 +78,7 @@ struct LeanStoreAdapterInmem : Adapter<Record> {
       
       auto result = store->insert(key_bytes, sizeof(typename Record::Key),
                                reinterpret_cast<u8*>(const_cast<Record*>(&record)),
-                               sizeof(Record));
+                               sizeof(Record), (u64)6969);
       if (result != OP_RESULT::OK) {
          throw std::runtime_error("Insert failed");
       }

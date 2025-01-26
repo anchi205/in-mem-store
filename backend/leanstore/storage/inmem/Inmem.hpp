@@ -32,7 +32,7 @@ class Inmem : public KVInterface, public InmemGeneric
    }
    // -------------------------------------------------------------------------------------
    virtual OP_RESULT lookup(u8* key, u16 key_length, std::function<void(const u8*, u16)> payload_callback) override;
-   virtual OP_RESULT insert(u8* key, u16 key_length, u8* value, u16 value_length) override;
+   virtual OP_RESULT insert(u8* key, u16 key_length, u8* value, u16 value_length, uint64_t ns_id) override;
    virtual OP_RESULT updateSameSizeInPlace(u8* key,
                                            u16 key_length,
                                            std::function<void(u8* value, u16 value_size)>,

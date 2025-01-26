@@ -38,11 +38,11 @@ void setup(LeanStore& db)
    });
 }
 
-void loadDB(LeanStore& db, const std::string& program_name)
+void readDB(LeanStore& db, const std::string& program_name)
 {
    if (true) {
       auto& crm = db.getCRManager();
-      crm.scheduleJobSync(0, loadData);
+      crm.scheduleJobSync(0, checkForReads);
       crm.joinAll();
       std::cout << "\n=== Initial Data Load Complete ===\n";
       std::cout << "Total entries: " << total_entries << "\n";
@@ -52,31 +52,31 @@ void loadDB(LeanStore& db, const std::string& program_name)
    }
 }
 
-void runRecoveryBenchmark(LeanStore& db)
-{
-   if (true) {
-      auto& crm = db.getCRManager();
-      crm.scheduleJobSync(0, runRecovery);
-      crm.joinAll();
-      db.getBufferManager().writeAllBufferFrames();
-   }
-}
+// void runRecoveryBenchmark(LeanStore& db)
+// {
+//    if (true) {
+//       auto& crm = db.getCRManager();
+//       crm.scheduleJobSync(0, runRecovery);
+//       crm.joinAll();
+//       db.getBufferManager().writeAllBufferFrames();
+//    }
+// }
 
 bool verifyDB(LeanStore& db) {
    // Define a unique key and value for verification
-   Integer verify_key = 12345;          // Use a unique integer key
-   Integer verify_value = rnd(1000000);  // Random value for testing
+   Integer verify_key = 72345;          // Use a unique integer key
+   Integer verify_value = 42069;  // Random value for testing
    u64 verify_ns_id = 99;                // Namespace ID
 
    bool found = false;
    kv_t record;
 
    // Insert the key-value pair within a scheduled worker thread
-   db.getCRManager().scheduleJobSync(0, [&]() {
-       cr::Worker::my().startTX();
-       kv_table.insert({verify_key}, {verify_value, verify_ns_id});
-       cr::Worker::my().commitTX();
-   });
+   // db.getCRManager().scheduleJobSync(0, [&]() {
+   //     cr::Worker::my().startTX();
+   //     kv_table.insert({verify_key}, {verify_value, verify_ns_id});
+   //     cr::Worker::my().commitTX();
+   // });
 
 
    // Lookup the key within a scheduled worker thread
@@ -97,12 +97,15 @@ bool verifyDB(LeanStore& db) {
        return true;
    }
 
+   std::cout << "actual DB read value is - " << record.value << std::endl;
    std::cout << "Database verification failed." << std::endl;
    return false;
 }
 
 int main(int argc, char** argv)
 {
+   std::cout << "lola lola lola lola lola lola lola lola lola lola " << std::endl;
+
    gflags::SetUsageMessage("Leanstore Recovery Benchmark");
    gflags::ParseCommandLineFlags(&argc, &argv, true);
    std::string program_name = argv[0];
@@ -123,9 +126,10 @@ int main(int argc, char** argv)
       //    std::cout << "\n=== Starting Initial Data Load ===\n";
       // }
       
-      loadDB(db, program_name);
-      runRecoveryBenchmark(db);
-      std::cout << "Benchmark completed. Exiting..." << std::endl;
+      readDB(db, program_name);
+      // runRecoveryBenchmark(db);
+      
    }
+   std::cout << "Benchmark completed. Exiting..." << std::endl;
    return 0;
 } 
