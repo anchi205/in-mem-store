@@ -57,6 +57,7 @@ class Inmem : public KVInterface, public InmemGeneric
    bool StartRecovery();
    bool RecoverNamespace(uint64_t namespace_id);
    void replayOperation(uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length);
+
    std::vector<u8> serialize_for_wal(const u8* key, u16 key_length, const u8* value, u16 value_length) {
       std::vector<u8> log_data;
       log_data.reserve(sizeof(u16) + key_length + sizeof(u16) + value_length);
@@ -90,8 +91,6 @@ class Inmem : public KVInterface, public InmemGeneric
       wal_data.insert(wal_data.end(), data.begin(), data.end());
       return wal_data;
    }
-
-
    std::pair<WALRecordType, std::vector<u8>> deserialize_from_log(const std::vector<u8>& wal_data) {
       if (wal_data.empty()) {
          throw std::invalid_argument("WAL data is empty.");

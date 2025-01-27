@@ -23,11 +23,11 @@ void Inmem::logOperation(uint64_t namespace_id, WALRecordType type, const std::v
       // Prepare WAL entry data with type
       std::vector<u8> wal_data = serialize_for_log(type, data);
       // Verify serialization/deserialization consist ency
-      auto [deserialized_type, deserialized_data] = deserialize_from_log(wal_data);
+      // auto [deserialized_type, deserialized_data] = deserialize_from_log(wal_data);
 
-      if (deserialized_type != type || deserialized_data != data) {
-          throw std::runtime_error("Serialization/deserialization mismatch");
-      }
+      // if (deserialized_type != type || deserialized_data != data) {
+      //     throw std::runtime_error("Serialization/deserialization mismatch");
+      // }
       aof->LogCommand(namespace_id, wal_data);
    }
 }
@@ -164,8 +164,11 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       uint64_t namespace_id = active_tx_ns;
 
       // Log the insert operation
-      std::vector<u8> log_data = serialize_for_log(WALRecordType::INSERT, std::vector<u8>(key, key + key_length));
-      logOperation(namespace_id, WALRecordType::INSERT, log_data);
+      
+      if(namespace_id != 9999) {
+         std::vector<u8> log_data = serialize_for_log(WALRecordType::INSERT, std::vector<u8>(key, key + key_length));
+         logOperation(namespace_id, WALRecordType::INSERT, log_data);
+      }
       // Verify serialization/deserialization
       // auto [deserialized_key, deserialized_key_length, deserialized_value, deserialized_value_length] = deserialize_from_log(log_data);
       

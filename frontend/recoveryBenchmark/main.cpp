@@ -67,7 +67,7 @@ bool verifyDB(LeanStore& db) {
        cr::Worker::my().startTX(
            leanstore::TX_MODE::OLTP, 
            leanstore::TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION, 
-           false, 
+           false,  
            99  // Specific namespace ID
        );
        kv_table.insert({verify_key}, {verify_value, verify_ns_id});

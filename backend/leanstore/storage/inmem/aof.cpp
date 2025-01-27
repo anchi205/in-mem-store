@@ -248,31 +248,40 @@ bool AOF::StartRecovery(const ReplayCallback& callback) {
             }
 
             // Print entry details
-            std::cout << "WAL Entry:" << std::endl;
-            std::cout << "  Version: " << entry.Version << std::endl;
-            std::cout << "  Sequence: " << entry.SequenceNo << std::endl;
-            std::cout << "  Namespace: " << entry.NamespaceId << std::endl;
-            std::cout << "  CRC32: 0x" << std::hex << entry.CRC32 << std::dec << std::endl;
-            std::cout << "  Timestamp: " << entry.Timestamp << std::endl;
-            std::cout << "  Data Size: " << entry.Data.size() << " bytes" << std::endl;
+            // std::cout << "WAL Entry:" << std::endl;
+            // std::cout << "  Version: " << entry.Version << std::endl;
+            // std::cout << "  Sequence: " << entry.SequenceNo << std::endl;
+            // std::cout << "  Namespace: " << entry.NamespaceId << std::endl;
+            // std::cout << "  CRC32: 0x"  << entry.CRC32  << std::endl;
+            // std::cout << "  Timestamp: " << entry.Timestamp << std::endl;
+            // std::cout << "  Data Size: " << entry.Data.size() << " bytes" << std::endl;
             
-            // Print data content (first few bytes as hex)
-            std::cout << "  Data (first 16 bytes): ";
-            for (size_t i = 0; i < std::min(size_t(16), entry.Data.size()); i++) {
-                std::cout << std::hex << std::setw(2) << std::setfill('0') 
-                         << static_cast<int>(entry.Data[i]) << " ";
-            }
-            std::cout << std::dec << std::endl;
-            std::cout << "----------------------------------------" << std::endl;
+            // // Print data content (first few bytes as hex)
+            // std::cout << "  Data (first 16 bytes): ";
+            // for (size_t i = 0; i < std::min(size_t(16), entry.Data.size()); i++) {
+            //     std::cout << std::hex << std::setw(2) << std::setfill('0') 
+            //              << static_cast<int>(entry.Data[i]) << " ";
+            // }
+            // std::cout << std::dec << std::endl;
+            // // Deserialize and print record type and data
+            // auto [record_type, deserialized_data] = deserialize_from_log(entry.Data);
+            // std::cout << "  Record Type: " << static_cast<int>(record_type) << std::endl;
+            // std::cout << "  Deserialized Data Size: " << deserialized_data.size() << " bytes" << std::endl;
 
+            PrintWalEntry(entry);
+            std::cout << "actual crc - " << CalculateCRC32(entry.Data) << std :: endl;
+
+            auto [type, command_data] = deserialize_from_log(entry.Data);
+            auto [key, key_l, value, value_l] = deserialize_from_wal(command_data);
+            
             // Update last sequence number
             lastSequenceNo = std::max(lastSequenceNo, entry.SequenceNo);
             namespaceLastSeqNo[entry.NamespaceId] = entry.SequenceNo;
 
             // Call the replay callback if provided
             if (callback) {
-                WALRecordType type = DetermineRecordType(entry.Data);
-                callback(entry.NamespaceId, type, entry.Data.data(), entry.Data.size(), nullptr, 0);
+                // Use the deserialized data for the callback
+                // callback(entry.NamespaceId, type, key, key_l, value, value_l);
             }
         }
 

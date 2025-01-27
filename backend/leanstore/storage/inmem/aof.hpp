@@ -74,6 +74,48 @@ public:
     uint64_t GetLastSequenceNumber() const { return lastSequenceNo; }
     std::vector<uint64_t> GetNamespaces() const;
     bool ReplayNamespace(uint64_t namespace_id, const ReplayCallback& callback);
+    std::vector<u8> serialize_for_wal(const u8* key, u16 key_length, const u8* value, u16 value_length) {
+      std::vector<u8> log_data;
+      log_data.reserve(sizeof(u16) + key_length + sizeof(u16) + value_length);
+      // Add key length and key
+      log_data.insert(log_data.end(), reinterpret_cast<const u8*>(&key_length), reinterpret_cast<const u8*>(&key_length) + sizeof(u16));
+      log_data.insert(log_data.end(), key, key + key_length);
+      // Add value length and value
+      log_data.insert(log_data.end(), reinterpret_cast<const u8*>(&value_length), reinterpret_cast<const u8*>(&value_length) + sizeof(u16));
+      log_data.insert(log_data.end(), value, value + value_length);
+      return log_data;
+   }
+
+   std::tuple<std::vector<u8>, u16, std::vector<u8>, u16> deserialize_from_wal(const std::vector<u8>& log_data) {
+      size_t pos = 0;
+      // Read key length
+      u16 key_length = *reinterpret_cast<const u16*>(log_data.data() + pos);
+      pos += sizeof(u16);
+      // Read key
+      std::vector<u8> key(log_data.begin() + pos, log_data.begin() + pos + key_length);
+      pos += key_length;
+      // Read value length
+      u16 value_length = *reinterpret_cast<const u16*>(log_data.data() + pos);
+      pos += sizeof(u16);
+      // Read value
+      std::vector<u8> value(log_data.begin() + pos, log_data.begin() + pos + value_length);
+      return {key, key_length, value, value_length};
+   }
+   std::vector<u8> serialize_for_log(WALRecordType type, const std::vector<u8>& data) {
+      std::vector<u8> wal_data;
+      wal_data.push_back(static_cast<u8>(type));  // First byte is the record type
+      wal_data.insert(wal_data.end(), data.begin(), data.end());
+      return wal_data;
+   }
+   std::pair<WALRecordType, std::vector<u8>> deserialize_from_log(const std::vector<u8>& wal_data) {
+      if (wal_data.empty()) {
+         throw std::invalid_argument("WAL data is empty.");
+      }
+
+      WALRecordType type = static_cast<WALRecordType>(wal_data[0]);
+      std::vector<u8> data(wal_data.begin() + 1, wal_data.end());
+      return {type, data};
+   }
 
 private:
     std::string logDir;
