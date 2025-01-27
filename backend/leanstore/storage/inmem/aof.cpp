@@ -1,5 +1,6 @@
 // aof.cpp
 #include "aof.hpp"
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 
@@ -102,11 +103,31 @@ int AOF::GetEntrySize(const std::vector<uint8_t>& data) {
 bool AOF::WriteEntryToBuffer(const WALEntry& entry) {
     PrintWalEntry(entry);
     try {
-        std::ostringstream oss;
-        oss.write(reinterpret_cast<const char*>(&entry), sizeof(entry));
-        oss.write(reinterpret_cast<const char*>(entry.Data.data()), entry.Data.size());
+        // Create and fill the header
+        struct WALEntryHeader {
+            uint32_t Version;
+            uint64_t SequenceNo;
+            uint64_t NamespaceId;
+            uint32_t CRC32;
+            uint64_t Timestamp;
+            uint32_t DataSize;
+        } header;
 
-        currentSegmentFile.write(oss.str().c_str(), oss.str().size());
+        header.Version = entry.Version;
+        header.SequenceNo = entry.SequenceNo;
+        header.NamespaceId = entry.NamespaceId;
+        header.CRC32 = entry.CRC32;
+        header.Timestamp = entry.Timestamp;
+        header.DataSize = entry.Data.size();
+
+        // Write header
+        currentSegmentFile.write(reinterpret_cast<const char*>(&header), sizeof(header));
+        
+        // Write data if present
+        if (!entry.Data.empty()) {
+            currentSegmentFile.write(reinterpret_cast<const char*>(entry.Data.data()), entry.Data.size());
+        }
+
         if (walMode == "unbuffered") {
             Sync();
         }
@@ -174,60 +195,87 @@ void AOF::deleteSegmentPeriodically() {
 
 // Recovery Methods Implementation
 bool AOF::StartRecovery(const ReplayCallback& callback) {
-    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
-    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
-    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
-    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
-    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
-
     auto segments = GetSegmentFiles();
     if (segments.empty()) {
         return true;  // No segments to recover from
     }
 
-    const size_t BATCH_SIZE = 1024 * 1024;  // Process 1MB at a time
-    std::vector<char> buffer(BATCH_SIZE);
+    struct WALEntryHeader {
+        uint32_t Version;
+        uint64_t SequenceNo;
+        uint64_t NamespaceId;
+        uint32_t CRC32;
+        uint64_t Timestamp;
+        uint32_t DataSize;  // Size of the following data
+    };
 
     for (const auto& segment : segments) {
+        std::cout << "\nReading file: " << segment << std::endl;
         std::ifstream file(segment, std::ios::binary);
-        std::cout << "hehehe hehehe hehehe hehehe hehehe " << std::endl;
         if (!file.is_open()) {
             std::cerr << "Failed to open segment file: " << segment << std::endl;
-            return false;
+            continue;
         }
 
-        std::cout << "haihai haihai haihai haihai haihai haihai " << std::endl;
+        std::cout << "Parsing WAL entries:" << std::endl;
+        std::cout << "----------------------------------------" << std::endl;
 
-        while (!file.eof()) {
+        while (file.good() && !file.eof()) {
+            WALEntryHeader header;
+            
+            // Read the fixed-size header first
+            if (!file.read(reinterpret_cast<char*>(&header), sizeof(WALEntryHeader))) {
+                if (file.eof()) break;
+                std::cerr << "Error reading WAL entry header" << std::endl;
+                break;
+            }
+
+            // Create WALEntry and copy header fields
             WALEntry entry;
-            std::cout << "hohoho hohoho hohoho hohoho hohoho " << std::endl;
-            ReadWALEntry(file, entry);
-            // PrintWalEntry(entry);
-            std::cout << entry.NamespaceId<< std::endl;
-            // if (!ReadWALEntry(file, entry)) {
-            //     if (file.eof()) break;
-            //     std::cerr << "Failed to read WAL entry in " << segment << std::endl;
-            //     continue;
-            // }
+            entry.Version = header.Version;
+            entry.SequenceNo = header.SequenceNo;
+            entry.NamespaceId = header.NamespaceId;
+            entry.CRC32 = header.CRC32;
+            entry.Timestamp = header.Timestamp;
 
-            // std::cout << "hihhihi hihhihi hihhihi hihhihi hihhihi " << std::endl;
+            // Read the data if present
+            if (header.DataSize > 0) {
+                entry.Data.resize(header.DataSize);
+                if (!file.read(reinterpret_cast<char*>(entry.Data.data()), header.DataSize)) {
+                    std::cerr << "Error reading entry data (size: " << header.DataSize << ")" << std::endl;
+                    break;
+                }
+            }
 
-            // if (!ValidateWALEntry(entry)) {
-            //     std::cerr << "Invalid WAL entry found in " << segment << std::endl;
-            //     continue;
-            // }
+            // Print entry details
+            std::cout << "WAL Entry:" << std::endl;
+            std::cout << "  Version: " << entry.Version << std::endl;
+            std::cout << "  Sequence: " << entry.SequenceNo << std::endl;
+            std::cout << "  Namespace: " << entry.NamespaceId << std::endl;
+            std::cout << "  CRC32: 0x" << std::hex << entry.CRC32 << std::dec << std::endl;
+            std::cout << "  Timestamp: " << entry.Timestamp << std::endl;
+            std::cout << "  Data Size: " << entry.Data.size() << " bytes" << std::endl;
+            
+            // Print data content (first few bytes as hex)
+            std::cout << "  Data (first 16 bytes): ";
+            for (size_t i = 0; i < std::min(size_t(16), entry.Data.size()); i++) {
+                std::cout << std::hex << std::setw(2) << std::setfill('0') 
+                         << static_cast<int>(entry.Data[i]) << " ";
+            }
+            std::cout << std::dec << std::endl;
+            std::cout << "----------------------------------------" << std::endl;
 
-            // std::cout << "hhuhuhu hhuhuhu hhuhuhu hhuhuhu hhuhuhu  " << std::endl;
-            // PrintWalEntry(entry);
+            // Update last sequence number
+            lastSequenceNo = std::max(lastSequenceNo, entry.SequenceNo);
+            namespaceLastSeqNo[entry.NamespaceId] = entry.SequenceNo;
 
-            // ParseAndReplayEntry(entry, callback);
-            // lastSequenceNo = std::max(lastSequenceNo, entry.SequenceNo);
-            // namespaceLastSeqNo[entry.NamespaceId] = entry.SequenceNo;
-
-            // // Release memory after processing each entry
-            // entry.Data.clear();
-            // entry.Data.shrink_to_fit();
+            // Call the replay callback if provided
+            if (callback) {
+                WALRecordType type = DetermineRecordType(entry.Data);
+                callback(entry.NamespaceId, type, entry.Data.data(), entry.Data.size(), nullptr, 0);
+            }
         }
+
         file.close();
     }
 
