@@ -1,5 +1,14 @@
 // aof.cpp
 #include "aof.hpp"
+#include <iostream>
+#include <iomanip>
+
+inline void PrintWalEntry(const WALEntry& entry) {
+    std::cout << "WAL Entry: v" << entry.Version << " seq=" << entry.SequenceNo << " ns=" << entry.NamespaceId 
+              << " crc=" << entry.CRC32 << " ts=" << entry.Timestamp << " size=" << entry.Data.size() << " data=";
+    for (const auto& byte : entry.Data) std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+    std::cout << std::dec << std::endl;
+}
 
 AOF::AOF(const std::string& directory)
     : logDir(directory), lastSequenceNo(0), currentSegmentIndex(0),
@@ -91,6 +100,7 @@ int AOF::GetEntrySize(const std::vector<uint8_t>& data) {
 }
 
 bool AOF::WriteEntryToBuffer(const WALEntry& entry) {
+    PrintWalEntry(entry);
     try {
         std::ostringstream oss;
         oss.write(reinterpret_cast<const char*>(&entry), sizeof(entry));
@@ -164,6 +174,12 @@ void AOF::deleteSegmentPeriodically() {
 
 // Recovery Methods Implementation
 bool AOF::StartRecovery(const ReplayCallback& callback) {
+    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
+    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
+    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
+    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
+    std::cout << "hahaha hahaha hahaha hahaha hahaha " << std::endl;
+
     auto segments = GetSegmentFiles();
     if (segments.empty()) {
         return true;  // No segments to recover from
@@ -174,31 +190,43 @@ bool AOF::StartRecovery(const ReplayCallback& callback) {
 
     for (const auto& segment : segments) {
         std::ifstream file(segment, std::ios::binary);
+        std::cout << "hehehe hehehe hehehe hehehe hehehe " << std::endl;
         if (!file.is_open()) {
             std::cerr << "Failed to open segment file: " << segment << std::endl;
             return false;
         }
 
+        std::cout << "haihai haihai haihai haihai haihai haihai " << std::endl;
+
         while (!file.eof()) {
             WALEntry entry;
-            if (!ReadWALEntry(file, entry)) {
-                if (file.eof()) break;
-                std::cerr << "Failed to read WAL entry in " << segment << std::endl;
-                continue;
-            }
+            std::cout << "hohoho hohoho hohoho hohoho hohoho " << std::endl;
+            ReadWALEntry(file, entry);
+            // PrintWalEntry(entry);
+            std::cout << entry.NamespaceId<< std::endl;
+            // if (!ReadWALEntry(file, entry)) {
+            //     if (file.eof()) break;
+            //     std::cerr << "Failed to read WAL entry in " << segment << std::endl;
+            //     continue;
+            // }
 
-            if (!ValidateWALEntry(entry)) {
-                std::cerr << "Invalid WAL entry found in " << segment << std::endl;
-                continue;
-            }
+            // std::cout << "hihhihi hihhihi hihhihi hihhihi hihhihi " << std::endl;
 
-            ParseAndReplayEntry(entry, callback);
-            lastSequenceNo = std::max(lastSequenceNo, entry.SequenceNo);
-            namespaceLastSeqNo[entry.NamespaceId] = entry.SequenceNo;
+            // if (!ValidateWALEntry(entry)) {
+            //     std::cerr << "Invalid WAL entry found in " << segment << std::endl;
+            //     continue;
+            // }
 
-            // Release memory after processing each entry
-            entry.Data.clear();
-            entry.Data.shrink_to_fit();
+            // std::cout << "hhuhuhu hhuhuhu hhuhuhu hhuhuhu hhuhuhu  " << std::endl;
+            // PrintWalEntry(entry);
+
+            // ParseAndReplayEntry(entry, callback);
+            // lastSequenceNo = std::max(lastSequenceNo, entry.SequenceNo);
+            // namespaceLastSeqNo[entry.NamespaceId] = entry.SequenceNo;
+
+            // // Release memory after processing each entry
+            // entry.Data.clear();
+            // entry.Data.shrink_to_fit();
         }
         file.close();
     }
@@ -253,6 +281,7 @@ std::vector<fs::path> AOF::GetSegmentFiles() const {
 
 bool AOF::ReadWALEntry(std::ifstream& file, WALEntry& entry) {
     // Read the fixed-size portion of the entry
+    std::cout << " started reading the entry from here" << std::endl;
     if (!file.read(reinterpret_cast<char*>(&entry.Version), sizeof(entry.Version)) ||
         !file.read(reinterpret_cast<char*>(&entry.SequenceNo), sizeof(entry.SequenceNo)) ||
         !file.read(reinterpret_cast<char*>(&entry.NamespaceId), sizeof(entry.NamespaceId)) ||
@@ -261,16 +290,22 @@ bool AOF::ReadWALEntry(std::ifstream& file, WALEntry& entry) {
         return false;
     }
 
+    std::cout << " reached here 1" << std::endl;
+
     // Read the variable-length data
     uint32_t dataSize;
     if (!file.read(reinterpret_cast<char*>(&dataSize), sizeof(dataSize))) {
         return false;
     }
 
+    std::cout << " reached here 2" << std::endl;
+
     entry.Data.resize(dataSize);
     if (!file.read(reinterpret_cast<char*>(entry.Data.data()), dataSize)) {
         return false;
     }
+
+    std::cout << " reached here 3" << std::endl;
 
     return true;
 }

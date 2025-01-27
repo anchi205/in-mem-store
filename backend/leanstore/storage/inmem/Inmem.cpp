@@ -17,12 +17,17 @@ namespace inmem
 {
 // -------------------------------------------------------------------------------------
 
+
 void Inmem::logOperation(uint64_t namespace_id, WALRecordType type, const std::vector<u8>& data) {
    if (config.enable_wal && aof) {
       // Prepare WAL entry data with type
-      std::vector<u8> wal_data;
-      wal_data.push_back(static_cast<u8>(type));  // First byte is the record type
-      wal_data.insert(wal_data.end(), data.begin(), data.end());
+      std::vector<u8> wal_data = serialize_for_log(type, data);
+      // Verify serialization/deserialization consist ency
+      auto [deserialized_type, deserialized_data] = deserialize_from_log(wal_data);
+
+      if (deserialized_type != type || deserialized_data != data) {
+          throw std::runtime_error("Serialization/deserialization mismatch");
+      }
       aof->LogCommand(namespace_id, wal_data);
    }
 }
@@ -157,18 +162,24 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
       auto& active_tx_ns = cr::activeTX().getNamespace();
       uint64_t namespace_id = active_tx_ns;
-      std::cout << "this is the namespace right here - " << namespace_id << std::endl;
 
       // Log the insert operation
-      std::vector<u8> log_data;
-      log_data.reserve(sizeof(u16) + key_length + sizeof(u16) + value_length);
-      // Add key length and key
-      log_data.insert(log_data.end(), reinterpret_cast<u8*>(&key_length), reinterpret_cast<u8*>(&key_length) + sizeof(u16));
-      log_data.insert(log_data.end(), key, key + key_length);
-      // Add value length and value
-      log_data.insert(log_data.end(), reinterpret_cast<u8*>(&value_length), reinterpret_cast<u8*>(&value_length) + sizeof(u16));
-      log_data.insert(log_data.end(), value, value + value_length);
+      std::vector<u8> log_data = serialize_for_log(WALRecordType::INSERT, std::vector<u8>(key, key + key_length));
       logOperation(namespace_id, WALRecordType::INSERT, log_data);
+      // Verify serialization/deserialization
+      // auto [deserialized_key, deserialized_key_length, deserialized_value, deserialized_value_length] = deserialize_from_log(log_data);
+      
+      // // Verify key matches
+      // if (key_length != deserialized_key_length || 
+      //     memcmp(key, deserialized_key.data(), key_length) != 0) {
+      //    throw std::runtime_error("Key verification failed after serialization");
+      // }
+      
+      // // Verify value matches  
+      // if (value_length != deserialized_value_length ||
+      //     memcmp(value, deserialized_value.data(), value_length) != 0) {
+      //    throw std::runtime_error("Value verification failed after serialization");
+      // }
    }
    
    try
@@ -200,7 +211,6 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       }
 
       // Insert the new key-value pair
-      std::cout << "insert op hua kya??" << std::endl;
       store.insert({KeyValue(key, key_length, value, value_length), nullptr});
       std::string key_str(key_vec.begin(), key_vec.end());
       lru_list.push_front(key_vec);
@@ -239,14 +249,7 @@ OP_RESULT Inmem::updateSameSizeInPlace(u8* key,
 
          if (config.enable_wal) {
             // Log the update operation
-            std::vector<u8> log_data;
-            log_data.reserve(sizeof(u16) + key_length + sizeof(u16) + new_value.size());
-            // Add key length and key
-            log_data.insert(log_data.end(), reinterpret_cast<u8*>(&key_length), reinterpret_cast<u8*>(&key_length) + sizeof(u16));
-            log_data.insert(log_data.end(), key, key + key_length);
-            // Add value length and value
-            u16 value_length = new_value.size();
-            log_data.insert(log_data.end(), reinterpret_cast<u8*>(&value_length), reinterpret_cast<u8*>(&value_length) + sizeof(u16));
+            std::vector<u8> log_data = serialize_for_log(WALRecordType::UPDATE, std::vector<u8>(key, key + key_length));
             log_data.insert(log_data.end(), new_value.begin(), new_value.end());
             logOperation(namespace_id, WALRecordType::UPDATE, log_data);
          }
@@ -280,15 +283,7 @@ OP_RESULT Inmem::remove(u8* key, u16 key_length)
 
          if (config.enable_wal) {
             // Log the remove operation
-            std::vector<u8> log_data;
-            log_data.reserve(sizeof(u16) + key_length + sizeof(u16) + it->first.value.size());
-            // Add key length and key
-            log_data.insert(log_data.end(), reinterpret_cast<u8*>(&key_length), reinterpret_cast<u8*>(&key_length) + sizeof(u16));
-            log_data.insert(log_data.end(), key, key + key_length);
-            // Add value length and value (for potential undo)
-            u16 value_length = it->first.value.size();
-            log_data.insert(log_data.end(), reinterpret_cast<u8*>(&value_length), reinterpret_cast<u8*>(&value_length) + sizeof(u16));
-            log_data.insert(log_data.end(), it->first.value.begin(), it->first.value.end());
+            std::vector<u8> log_data = serialize_for_log(WALRecordType::REMOVE, std::vector<u8>(key, key + key_length));
             logOperation(namespace_id, WALRecordType::REMOVE, log_data);
          }
          

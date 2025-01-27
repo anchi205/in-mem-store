@@ -56,7 +56,7 @@ void loadDB(LeanStore& db, const std::string& program_name)
 bool verifyDB(LeanStore& db) {
    // Define a unique key and value for verification
    Integer verify_key = 72345;          // Use a unique integer key
-   Integer verify_value = 42069;  // Random value for testing
+   Integer verify_value = 42070;  // Random value for testing
    u64 verify_ns_id = 99;                // Namespace ID
 
    bool found = false;
@@ -70,7 +70,7 @@ bool verifyDB(LeanStore& db) {
            false, 
            99  // Specific namespace ID
        );
-       kv_table.insert({verify_key}, {verify_value});
+       kv_table.insert({verify_key}, {verify_value, verify_ns_id});
        cr::Worker::my().commitTX();
    });
 
@@ -117,6 +117,6 @@ int main(int argc, char** argv)
       loadDB(db, program_name);
       
    }
-   std::cout << "Benchmark completed. Exiting..." << std::endl;
+   std::cout << "Database and WAL loading completed. Exiting..." << std::endl;
    return 0;
 } 

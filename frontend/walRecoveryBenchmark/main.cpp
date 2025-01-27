@@ -65,7 +65,7 @@ void readDB(LeanStore& db, const std::string& program_name)
 bool verifyDB(LeanStore& db) {
    // Define a unique key and value for verification
    Integer verify_key = 72345;          // Use a unique integer key
-   Integer verify_value = 42069;  // Random value for testing
+   Integer verify_value = 42070;  // Random value for testing
    u64 verify_ns_id = 99;                // Namespace ID
 
    bool found = false;
