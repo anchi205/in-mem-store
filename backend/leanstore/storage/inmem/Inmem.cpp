@@ -33,26 +33,46 @@ void Inmem::logOperation(uint64_t namespace_id, WALRecordType type, const std::v
 }
 
 void Inmem::replayOperation(uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
-    // Set the current transaction's namespace
-    auto& tx = cr::activeTX();
+    // Start transaction with proper mode and isolation level
+    cr::Worker::my().startTX(
+        TX_MODE::OLTP,
+        TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION,
+        false,  // not read-only
+        9999  // pass the namespace_id
+    );
 
-    switch (type) {
-        case WALRecordType::INSERT: {
-            store.insert({KeyValue(key, key_length, value, value_length), nullptr});
-            break;
-        }
-        case WALRecordType::UPDATE: {
-            auto it = store.find(KeyValue(key, key_length, nullptr, 0));
-            if (it != store.end()) {
-                store.erase(it);
-                store.insert({KeyValue(key, key_length, value, value_length), nullptr});
+    try {
+        switch (type) {
+            case WALRecordType::INSERT: {
+                std::vector<u8> key_copy(key, key + key_length);
+                std::vector<u8> value_copy(value, value + value_length);
+                auto result = insert(key_copy.data(), key_length, value_copy.data(), value_length);
+                if (result != OP_RESULT::OK) {
+                    std::cout << "Insert failed during replay because ok" << std::endl;
+                    cr::Worker::my().abortTX();
+                    return;
+                }
+                break;
             }
-            break;
+            case WALRecordType::UPDATE: {
+                auto it = store.find(KeyValue(key, key_length, nullptr, 0));
+                if (it != store.end()) {
+                    store.erase(it);
+                    store.insert({KeyValue(key, key_length, value, value_length), nullptr});
+                }
+                break;
+            }
+            case WALRecordType::REMOVE: {
+                store.erase(KeyValue(key, key_length, nullptr, 0));
+                break;
+            }
         }
-        case WALRecordType::REMOVE: {
-            store.erase(KeyValue(key, key_length, nullptr, 0));
-            break;
-        }
+        
+        // Commit the transaction if successful
+        cr::Worker::my().commitTX();
+    } catch (const std::exception& e) {
+        std::cout << "Exception during replay: " << e.what() << std::endl;
+        cr::Worker::my().abortTX();
     }
 }
 
@@ -162,7 +182,6 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
       auto& active_tx_ns = cr::activeTX().getNamespace();
       uint64_t namespace_id = active_tx_ns;
-
       // Log the insert operation
       
       if(namespace_id != 9999) {

@@ -64,9 +64,9 @@ void readDB(LeanStore& db, const std::string& program_name)
 
 bool verifyDB(LeanStore& db) {
    // Define a unique key and value for verification
-   Integer verify_key = 72345;          // Use a unique integer key
-   Integer verify_value = 42070;  // Random value for testing
-   u64 verify_ns_id = 99;                // Namespace ID
+   Integer verify_key = 5;          // Use a unique integer key
+   Integer verify_value = 1005;  // Random value for testing
+   u64 verify_ns_id = 0;                // Namespace ID
 
    bool found = false;
    kv_t record;
@@ -104,7 +104,6 @@ bool verifyDB(LeanStore& db) {
 
 int main(int argc, char** argv)
 {
-   std::cout << "lola lola lola lola lola lola lola lola lola lola " << std::endl;
 
    gflags::SetUsageMessage("Leanstore Recovery Benchmark");
    gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -126,7 +125,7 @@ int main(int argc, char** argv)
       //    std::cout << "\n=== Starting Initial Data Load ===\n";
       // }
       
-      readDB(db, program_name);
+      // readDB(db, program_name);
       // runRecoveryBenchmark(db);
       
    }

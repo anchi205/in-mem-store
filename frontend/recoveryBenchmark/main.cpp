@@ -99,7 +99,6 @@ bool verifyDB(LeanStore& db) {
 
 int main(int argc, char** argv)
 {
-   std::cout << "lola lola lola lola lola lola lola lola lola lola " << std::endl;
 
    gflags::SetUsageMessage("Leanstore Recovery Benchmark");
    gflags::ParseCommandLineFlags(&argc, &argv, true);

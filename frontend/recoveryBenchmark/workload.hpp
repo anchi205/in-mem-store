@@ -47,7 +47,7 @@ void loadNamespace(u64 ns_id)
 
    for (Integer i = 0; i < FLAGS_entries_per_namespace; i++) {
       Integer key = (ns_id * FLAGS_entries_per_namespace) + i;
-      Integer value = rnd(1000000);
+      Integer value = 1000+key;
       u64 entry_checksum = calculateChecksum(key, value, ns_id);
       namespace_checksum ^= entry_checksum;
 
@@ -58,6 +58,7 @@ void loadNamespace(u64 ns_id)
          ns_id  // Specific namespace ID
       );
       try {
+         std::cout << "keys going from here: key - " << key << " , value - " << value << std::endl;
          kv_table.insert({key}, {value, ns_id});
          entry_checksums.push_back({key, entry_checksum});
          successful_inserts++;

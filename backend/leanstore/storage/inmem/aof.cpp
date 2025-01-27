@@ -101,7 +101,7 @@ int AOF::GetEntrySize(const std::vector<uint8_t>& data) {
 }
 
 bool AOF::WriteEntryToBuffer(const WALEntry& entry) {
-    PrintWalEntry(entry);
+    // PrintWalEntry(entry);
     try {
         // Create and fill the header
         struct WALEntryHeader {
@@ -206,7 +206,7 @@ bool AOF::StartRecovery(const ReplayCallback& callback) {
         uint64_t NamespaceId;
         uint32_t CRC32;
         uint64_t Timestamp;
-        uint32_t DataSize;  // Size of the following data
+        uint32_t DataSize;
     };
 
     for (const auto& segment : segments) {
@@ -217,20 +217,15 @@ bool AOF::StartRecovery(const ReplayCallback& callback) {
             continue;
         }
 
-        std::cout << "Parsing WAL entries:" << std::endl;
-        std::cout << "----------------------------------------" << std::endl;
-
         while (file.good() && !file.eof()) {
             WALEntryHeader header;
             
-            // Read the fixed-size header first
             if (!file.read(reinterpret_cast<char*>(&header), sizeof(WALEntryHeader))) {
                 if (file.eof()) break;
                 std::cerr << "Error reading WAL entry header" << std::endl;
                 break;
             }
 
-            // Create WALEntry and copy header fields
             WALEntry entry;
             entry.Version = header.Version;
             entry.SequenceNo = header.SequenceNo;
@@ -238,50 +233,40 @@ bool AOF::StartRecovery(const ReplayCallback& callback) {
             entry.CRC32 = header.CRC32;
             entry.Timestamp = header.Timestamp;
 
-            // Read the data if present
             if (header.DataSize > 0) {
                 entry.Data.resize(header.DataSize);
                 if (!file.read(reinterpret_cast<char*>(entry.Data.data()), header.DataSize)) {
-                    std::cerr << "Error reading entry data (size: " << header.DataSize << ")" << std::endl;
+                    std::cerr << "Error reading entry data" << std::endl;
                     break;
                 }
             }
 
-            // Print entry details
-            // std::cout << "WAL Entry:" << std::endl;
-            // std::cout << "  Version: " << entry.Version << std::endl;
-            // std::cout << "  Sequence: " << entry.SequenceNo << std::endl;
-            // std::cout << "  Namespace: " << entry.NamespaceId << std::endl;
-            // std::cout << "  CRC32: 0x"  << entry.CRC32  << std::endl;
-            // std::cout << "  Timestamp: " << entry.Timestamp << std::endl;
-            // std::cout << "  Data Size: " << entry.Data.size() << " bytes" << std::endl;
-            
-            // // Print data content (first few bytes as hex)
-            // std::cout << "  Data (first 16 bytes): ";
-            // for (size_t i = 0; i < std::min(size_t(16), entry.Data.size()); i++) {
-            //     std::cout << std::hex << std::setw(2) << std::setfill('0') 
-            //              << static_cast<int>(entry.Data[i]) << " ";
-            // }
-            // std::cout << std::dec << std::endl;
-            // // Deserialize and print record type and data
-            // auto [record_type, deserialized_data] = deserialize_from_log(entry.Data);
-            // std::cout << "  Record Type: " << static_cast<int>(record_type) << std::endl;
-            // std::cout << "  Deserialized Data Size: " << deserialized_data.size() << " bytes" << std::endl;
+            // PrintWalEntry(entry);
 
-            PrintWalEntry(entry);
-            std::cout << "actual crc - " << CalculateCRC32(entry.Data) << std :: endl;
+            // Validate CRC
+            if (CalculateCRC32(entry.Data) != entry.CRC32) {
+                std::cerr << "CRC mismatch, skipping entry" << std::endl;
+                continue;
+            }
 
+            // Deserialize the data
             auto [type, command_data] = deserialize_from_log(entry.Data);
-            auto [key, key_l, value, value_l] = deserialize_from_wal(command_data);
-            
-            // Update last sequence number
+            auto [key, key_length, value, value_length] = deserialize_from_wal(command_data);
+
+            // Update sequence numbers
             lastSequenceNo = std::max(lastSequenceNo, entry.SequenceNo);
             namespaceLastSeqNo[entry.NamespaceId] = entry.SequenceNo;
 
-            // Call the replay callback if provided
-            if (callback) {
-                // Use the deserialized data for the callback
-                // callback(entry.NamespaceId, type, key, key_l, value, value_l);
+            // Call the callback with raw pointers and lengths
+            if (callback && !key.empty()) {
+                callback(
+                    entry.NamespaceId,
+                    type,
+                    key.data(),
+                    key_length,
+                    value.data(),
+                    value_length
+                );
             }
         }
 
@@ -346,23 +331,16 @@ bool AOF::ReadWALEntry(std::ifstream& file, WALEntry& entry) {
         !file.read(reinterpret_cast<char*>(&entry.Timestamp), sizeof(entry.Timestamp))) {
         return false;
     }
-
-    std::cout << " reached here 1" << std::endl;
-
     // Read the variable-length data
     uint32_t dataSize;
     if (!file.read(reinterpret_cast<char*>(&dataSize), sizeof(dataSize))) {
         return false;
     }
 
-    std::cout << " reached here 2" << std::endl;
-
     entry.Data.resize(dataSize);
     if (!file.read(reinterpret_cast<char*>(entry.Data.data()), dataSize)) {
         return false;
     }
-
-    std::cout << " reached here 3" << std::endl;
 
     return true;
 }

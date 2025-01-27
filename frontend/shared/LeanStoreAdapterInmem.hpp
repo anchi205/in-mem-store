@@ -75,7 +75,6 @@ struct LeanStoreAdapterInmem : Adapter<Record> {
    void insert(const typename Record::Key& key, const Record& record) override {
       u8 key_bytes[sizeof(typename Record::Key)];
       std::memcpy(key_bytes, &key, sizeof(typename Record::Key));
-      
       auto result = store->insert(key_bytes, sizeof(typename Record::Key),
                                reinterpret_cast<u8*>(const_cast<Record*>(&record)),
                                sizeof(Record));

@@ -24,14 +24,11 @@ void InmemGeneric::create(DTID dtid, Config config)
          if (!aof->Init()) {
             throw std::runtime_error("Failed to initialize AOF");
          }
-         
-         std::cout << "lmao lmao lmao lmao lmao lmao lmao lmao " << std::endl;
          // Start recovery if WAL is enabled
          bool must_recover = true;
          if (must_recover) {
             std::cout << "Starting recovery for dtid " << dtid << std::endl;
             aof->StartRecovery([this](uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
-               // Replay operation in the in-memory store
                auto& inmem = dynamic_cast<Inmem&>(*this);
                inmem.replayOperation(namespace_id, type, key, key_length, value, value_length);
             });
