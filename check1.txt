@@ -1,0 +1,469 @@
+Starting recovery for dtid 12
+
+Reading file: "/home/anchita20/Desktop/in-mem-store/walaof/12/segment_0"
+Recovery completed for dtid 12
+Inserting: 
+Key length: 4
+Key bytes: 153 26 1 0 
+Value length: 16
+Value bytes: 86 164 0 0 0 0 0 0 99 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+Database verification succeeded.
+These are the namespaces that are added: 0, 1, 2, 3, 4, 
+keys going from here: key - 0 , value - 1000
+Inserting: 
+Key length: 4
+Key bytes: 0 0 0 0 
+Value length: 16
+Value bytes: 232 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 1 , value - 1001
+Inserting: 
+Key length: 4
+Key bytes: 1 0 0 0 
+Value length: 16
+Value bytes: 233 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 2 , value - 1002
+Inserting: 
+Key length: 4
+Key bytes: 2 0 0 0 
+Value length: 16
+Value bytes: 234 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 3 , value - 1003
+Inserting: 
+Key length: 4
+Key bytes: 3 0 0 0 
+Value length: 16
+Value bytes: 235 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 4 , value - 1004
+Inserting: 
+Key length: 4
+Key bytes: 4 0 0 0 
+Value length: 16
+Value bytes: 236 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 5 , value - 1005
+Inserting: 
+Key length: 4
+Key bytes: 5 0 0 0 
+Value length: 16
+Value bytes: 237 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 6 , value - 1006
+Inserting: 
+Key length: 4
+Key bytes: 6 0 0 0 
+Value length: 16
+Value bytes: 238 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 7 , value - 1007
+Inserting: 
+Key length: 4
+Key bytes: 7 0 0 0 
+Value length: 16
+Value bytes: 239 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 8 , value - 1008
+Inserting: 
+Key length: 4
+Key bytes: 8 0 0 0 
+Value length: 16
+Value bytes: 240 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 9 , value - 1009
+Inserting: 
+Key length: 4
+Key bytes: 9 0 0 0 
+Value length: 16
+Value bytes: 241 3 0 0 118 127 0 0 0 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+Namespace ID : 0, Namespace checksum - 736
+keys going from here: key - 10 , value - 1010
+Inserting: 
+Key length: 4
+Key bytes: 10 0 0 0 
+Value length: 16
+Value bytes: 242 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 11 , value - 1011
+Inserting: 
+Key length: 4
+Key bytes: 11 0 0 0 
+Value length: 16
+Value bytes: 243 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 12 , value - 1012
+Inserting: 
+Key length: 4
+Key bytes: 12 0 0 0 
+Value length: 16
+Value bytes: 244 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 13 , value - 1013
+Inserting: 
+Key length: 4
+Key bytes: 13 0 0 0 
+Value length: 16
+Value bytes: 245 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 14 , value - 1014
+Inserting: 
+Key length: 4
+Key bytes: 14 0 0 0 
+Value length: 16
+Value bytes: 246 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 15 , value - 1015
+Inserting: 
+Key length: 4
+Key bytes: 15 0 0 0 
+Value length: 16
+Value bytes: 247 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 16 , value - 1016
+Inserting: 
+Key length: 4
+Key bytes: 16 0 0 0 
+Value length: 16
+Value bytes: 248 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 17 , value - 1017
+Inserting: 
+Key length: 4
+Key bytes: 17 0 0 0 
+Value length: 16
+Value bytes: 249 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 18 , value - 1018
+Inserting: 
+Key length: 4
+Key bytes: 18 0 0 0 
+Value length: 16
+Value bytes: 250 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 19 , value - 1019
+Inserting: 
+Key length: 4
+Key bytes: 19 0 0 0 
+Value length: 16
+Value bytes: 251 3 0 0 118 127 0 0 1 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+Namespace ID : 1, Namespace checksum - 23904
+keys going from here: key - 20 , value - 1020
+Inserting: 
+Key length: 4
+Key bytes: 20 0 0 0 
+Value length: 16
+Value bytes: 252 3 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 21 , value - 1021
+Inserting: 
+Key length: 4
+Key bytes: 21 0 0 0 
+Value length: 16
+Value bytes: 253 3 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 22 , value - 1022
+Inserting: 
+Key length: 4
+Key bytes: 22 0 0 0 
+Value length: 16
+Value bytes: 254 3 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 23 , value - 1023
+Inserting: 
+Key length: 4
+Key bytes: 23 0 0 0 
+Value length: 16
+Value bytes: 255 3 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 24 , value - 1024
+Inserting: 
+Key length: 4
+Key bytes: 24 0 0 0 
+Value length: 16
+Value bytes: 0 4 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 25 , value - 1025
+Inserting: 
+Key length: 4
+Key bytes: 25 0 0 0 
+Value length: 16
+Value bytes: 1 4 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 26 , value - 1026
+Inserting: 
+Key length: 4
+Key bytes: 26 0 0 0 
+Value length: 16
+Value bytes: 2 4 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 27 , value - 1027
+Inserting: 
+Key length: 4
+Key bytes: 27 0 0 0 
+Value length: 16
+Value bytes: 3 4 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 28 , value - 1028
+Inserting: 
+Key length: 4
+Key bytes: 28 0 0 0 
+Value length: 16
+Value bytes: 4 4 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 29 , value - 1029
+Inserting: 
+Key length: 4
+Key bytes: 29 0 0 0 
+Value length: 16
+Value bytes: 5 4 0 0 118 127 0 0 2 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+Namespace ID : 2, Namespace checksum - 12256
+keys going from here: key - 30 , value - 1030
+Inserting: 
+Key length: 4
+Key bytes: 30 0 0 0 
+Value length: 16
+Value bytes: 6 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 31 , value - 1031
+Inserting: 
+Key length: 4
+Key bytes: 31 0 0 0 
+Value length: 16
+Value bytes: 7 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 32 , value - 1032
+Inserting: 
+Key length: 4
+Key bytes: 32 0 0 0 
+Value length: 16
+Value bytes: 8 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 33 , value - 1033
+Inserting: 
+Key length: 4
+Key bytes: 33 0 0 0 
+Value length: 16
+Value bytes: 9 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 34 , value - 1034
+Inserting: 
+Key length: 4
+Key bytes: 34 0 0 0 
+Value length: 16
+Value bytes: 10 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 35 , value - 1035
+Inserting: 
+Key length: 4
+Key bytes: 35 0 0 0 
+Value length: 16
+Value bytes: 11 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 36 , value - 1036
+Inserting: 
+Key length: 4
+Key bytes: 36 0 0 0 
+Value length: 16
+Value bytes: 12 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 37 , value - 1037
+Inserting: 
+Key length: 4
+Key bytes: 37 0 0 0 
+Value length: 16
+Value bytes: 13 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 38 , value - 1038
+Inserting: 
+Key length: 4
+Key bytes: 38 0 0 0 
+Value length: 16
+Value bytes: 14 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 39 , value - 1039
+Inserting: 
+Key length: 4
+Key bytes: 39 0 0 0 
+Value length: 16
+Value bytes: 15 4 0 0 118 127 0 0 3 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+Namespace ID : 3, Namespace checksum - 130400
+keys going from here: key - 40 , value - 1040
+Inserting: 
+Key length: 4
+Key bytes: 40 0 0 0 
+Value length: 16
+Value bytes: 16 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 41 , value - 1041
+Inserting: 
+Key length: 4
+Key bytes: 41 0 0 0 
+Value length: 16
+Value bytes: 17 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 42 , value - 1042
+Inserting: 
+Key length: 4
+Key bytes: 42 0 0 0 
+Value length: 16
+Value bytes: 18 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 43 , value - 1043
+Inserting: 
+Key length: 4
+Key bytes: 43 0 0 0 
+Value length: 16
+Value bytes: 19 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 44 , value - 1044
+Inserting: 
+Key length: 4
+Key bytes: 44 0 0 0 
+Value length: 16
+Value bytes: 20 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 45 , value - 1045
+Inserting: 
+Key length: 4
+Key bytes: 45 0 0 0 
+Value length: 16
+Value bytes: 21 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 46 , value - 1046
+Inserting: 
+Key length: 4
+Key bytes: 46 0 0 0 
+Value length: 16
+Value bytes: 22 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 47 , value - 1047
+Inserting: 
+Key length: 4
+Key bytes: 47 0 0 0 
+Value length: 16
+Value bytes: 23 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 48 , value - 1048
+Inserting: 
+Key length: 4
+Key bytes: 48 0 0 0 
+Value length: 16
+Value bytes: 24 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+keys going from here: key - 49 , value - 1049
+Inserting: 
+Key length: 4
+Key bytes: 49 0 0 0 
+Value length: 16
+Value bytes: 25 4 0 0 118 127 0 0 4 0 0 0 0 0 0 0 
+------------------
+
+has been here mate 
+Namespace ID : 4, Namespace checksum - 736

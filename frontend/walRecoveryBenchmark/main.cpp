@@ -64,20 +64,12 @@ void readDB(LeanStore& db, const std::string& program_name)
 
 bool verifyDB(LeanStore& db) {
    // Define a unique key and value for verification
-   Integer verify_key = 5;          // Use a unique integer key
-   Integer verify_value = 1005;  // Random value for testing
-   u64 verify_ns_id = 0;                // Namespace ID
+   Integer verify_key = 72345;
+   Integer verify_value = 42070;
+   u64 verify_ns_id = 99;
 
    bool found = false;
    kv_t record;
-
-   // Insert the key-value pair within a scheduled worker thread
-   // db.getCRManager().scheduleJobSync(0, [&]() {
-   //     cr::Worker::my().startTX();
-   //     kv_table.insert({verify_key}, {verify_value, verify_ns_id});
-   //     cr::Worker::my().commitTX();
-   // });
-
 
    // Lookup the key within a scheduled worker thread
    db.getCRManager().scheduleJobSync(0, [&]() {

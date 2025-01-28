@@ -177,31 +177,33 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(cons
 
 OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
 {
+   std::cout << "Inserting: " << std::endl;
+   std::cout << "Key length: " << key_length << std::endl;
+   std::cout << "Key bytes: ";
+   for (u16 i = 0; i < key_length; i++) {
+      std::cout << static_cast<int>(key[i]) << " ";
+   }
+   std::cout << std::endl;
+   std::cout << "Value length: " << value_length << std::endl; 
+   std::cout << "Value bytes: ";
+   for (u16 i = 0; i < value_length; i++) {
+      std::cout << static_cast<int>(value[i]) << " ";
+   }
+   std::cout << "\n------------------\n";
+   std::cout << std::endl;
    cr::activeTX().markAsWrite();
    if (config.enable_wal) {
       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
       auto& active_tx_ns = cr::activeTX().getNamespace();
       uint64_t namespace_id = active_tx_ns;
-      // Log the insert operation
-      
+      // Log the insert operation with both key and value
+
       if(namespace_id != 9999) {
-         std::vector<u8> log_data = serialize_for_log(WALRecordType::INSERT, std::vector<u8>(key, key + key_length));
+         std::cout << "has been here mate \n";
+         std::vector<u8> log_data = serialize_for_wal(key, key_length, value, value_length);
          logOperation(namespace_id, WALRecordType::INSERT, log_data);
       }
-      // Verify serialization/deserialization
-      // auto [deserialized_key, deserialized_key_length, deserialized_value, deserialized_value_length] = deserialize_from_log(log_data);
       
-      // // Verify key matches
-      // if (key_length != deserialized_key_length || 
-      //     memcmp(key, deserialized_key.data(), key_length) != 0) {
-      //    throw std::runtime_error("Key verification failed after serialization");
-      // }
-      
-      // // Verify value matches  
-      // if (value_length != deserialized_value_length ||
-      //     memcmp(value, deserialized_value.data(), value_length) != 0) {
-      //    throw std::runtime_error("Value verification failed after serialization");
-      // }
    }
    
    try
