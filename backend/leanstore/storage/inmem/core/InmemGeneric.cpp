@@ -8,6 +8,8 @@
 #include "leanstore/utils/RandomGenerator.hpp"
 #include "leanstore/storage/inmem/aof.hpp"
 
+#include <chrono>
+
 // Usage in code
 std::vector<uint64_t> parseNamespacesToRecover() {
     std::vector<uint64_t> numbers;
@@ -45,6 +47,7 @@ void InmemGeneric::create(DTID dtid, Config config)
          } 
          if (must_recover) {
             std::cout << "Starting recovery.... " << std::endl;
+            auto recovery_start = std::chrono::high_resolution_clock::now();
             
             if(FLAGS_recover_all) {
                std::cout << "Recovering all namespaces" << std::endl;
@@ -63,7 +66,9 @@ void InmemGeneric::create(DTID dtid, Config config)
                }
             }
             
-            std::cout << "Recovery completed...." << std::endl;
+            auto recovery_end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(recovery_end - recovery_start);
+            std::cout << "Recovery completed in " << (duration.count() / 1000.0) << " milliseconds" << std::endl;
          }
       } catch (const std::exception& e) {
          throw std::runtime_error("Failed to initialize AOF for inmem store " + std::to_string(dtid) + ": " + e.what());
