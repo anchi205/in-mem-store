@@ -70,7 +70,6 @@ bool verifyDB(LeanStore& db) {
            false,  
            99  // Specific namespace ID
        );
-      // std::cout << "normal integer - " << "key - " << verify_key << " value - " << verify_value << std::endl; 
        kv_table.insert({verify_key}, {verify_value, verify_ns_id});
        cr::Worker::my().commitTX();
    });

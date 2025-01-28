@@ -193,6 +193,85 @@ void AOF::deleteSegmentPeriodically() {
     }
 }
 
+bool AOF::StartNamespaceRecovery(const ReplayCallback& callback, u64 ns_id) {
+    auto segments = GetSegmentFiles();
+    if (segments.empty()) {
+        return true;  // No segments to recover from
+    }
+
+    struct WALEntryHeader {
+        uint32_t Version;
+        uint64_t SequenceNo;
+        uint64_t NamespaceId;
+        uint32_t CRC32;
+        uint64_t Timestamp;
+        uint32_t DataSize;
+    };
+
+    for (const auto& segment : segments) {
+        std::cout << "\nReading file: " << segment << std::endl;
+        std::ifstream file(segment, std::ios::binary);
+        if (!file.is_open()) {
+            std::cerr << "Failed to open segment file: " << segment << std::endl;
+            continue;
+        }
+
+        while (file.good() && !file.eof()) {
+            WALEntryHeader header;
+            
+            if (!file.read(reinterpret_cast<char*>(&header), sizeof(WALEntryHeader))) {
+                if (file.eof()) break;
+                std::cerr << "Error reading WAL entry header" << std::endl;
+                break;
+            }
+
+            WALEntry entry;
+            entry.Version = header.Version;
+            entry.SequenceNo = header.SequenceNo;
+            entry.NamespaceId = header.NamespaceId;
+            entry.CRC32 = header.CRC32;
+            entry.Timestamp = header.Timestamp;
+
+            
+            if (header.DataSize > 0) {
+                entry.Data.resize(header.DataSize);
+                if (!file.read(reinterpret_cast<char*>(entry.Data.data()), header.DataSize)) {
+                    std::cerr << "Error reading entry data" << std::endl;
+                    break;
+                }
+            }
+
+            // Validate CRC
+            if (CalculateCRC32(entry.Data) != entry.CRC32) {
+                std::cerr << "CRC mismatch, skipping entry" << std::endl;
+                continue;
+            }
+
+            // Deserialize the data
+            auto [type, command_data] = deserialize_from_log(entry.Data);
+            auto [key, key_length, value, value_length] = deserialize_from_wal(command_data);
+
+            // Update sequence numbers
+            lastSequenceNo = std::max(lastSequenceNo, entry.SequenceNo);
+            namespaceLastSeqNo[entry.NamespaceId] = entry.SequenceNo;
+
+            // Call the callback with raw pointers and lengths
+            if (callback && !key.empty() && (entry.NamespaceId == ns_id || entry.NamespaceId == 99)) {
+                callback(
+                    entry.NamespaceId,
+                    type,
+                    key.data(),
+                    key_length,
+                    value.data(),
+                    value_length
+                );
+            }
+        }
+        file.close();
+    }
+    return true;
+}
+
 // Recovery Methods Implementation
 bool AOF::StartRecovery(const ReplayCallback& callback) {
     auto segments = GetSegmentFiles();
@@ -241,7 +320,6 @@ bool AOF::StartRecovery(const ReplayCallback& callback) {
                 }
             }
 
-            // PrintWalEntry(entry);
 
             // Validate CRC
             if (CalculateCRC32(entry.Data) != entry.CRC32) {
@@ -275,6 +353,7 @@ bool AOF::StartRecovery(const ReplayCallback& callback) {
 
     return true;
 }
+
 
 std::vector<uint64_t> AOF::GetNamespaces() const {
     std::vector<uint64_t> namespaces;

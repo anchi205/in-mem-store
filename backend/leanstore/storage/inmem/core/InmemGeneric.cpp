@@ -8,6 +8,19 @@
 #include "leanstore/utils/RandomGenerator.hpp"
 #include "leanstore/storage/inmem/aof.hpp"
 
+// Usage in code
+std::vector<uint64_t> parseNamespacesToRecover() {
+    std::vector<uint64_t> numbers;
+    std::string str = FLAGS_recover_namespaces;
+    std::stringstream ss(str);
+    std::string number;
+    
+    while (std::getline(ss, number, ',')) {
+        numbers.push_back((uint64_t)std::stoi(number));
+    }
+    return numbers;
+}
+
 using namespace leanstore::storage;
 namespace leanstore::storage::inmem
 {
@@ -26,13 +39,31 @@ void InmemGeneric::create(DTID dtid, Config config)
          }
          // Start recovery if WAL is enabled
          bool must_recover = true;
+         if(!FLAGS_recover_all && FLAGS_recover_namespaces == "") {
+            std::cout << "Skipping recovery...." << std::endl;
+            must_recover = false;
+         } 
          if (must_recover) {
-            std::cout << "Starting recovery for dtid " << dtid << std::endl;
-            aof->StartRecovery([this](uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
-               auto& inmem = dynamic_cast<Inmem&>(*this);
-               inmem.replayOperation(namespace_id, type, key, key_length, value, value_length);
-            });
-            std::cout << "Recovery completed for dtid " << dtid << std::endl;
+            std::cout << "Starting recovery.... " << std::endl;
+            
+            if(FLAGS_recover_all) {
+               std::cout << "Recovering all namespaces" << std::endl;
+               aof->StartRecovery([this](uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
+                  auto& inmem = dynamic_cast<Inmem&>(*this);
+                  inmem.replayOperation(namespace_id, type, key, key_length, value, value_length);
+               });
+            } else {
+               auto namespaces = parseNamespacesToRecover();
+               for (const auto& ns : namespaces) {
+                  std::cout << "Reccovering namespace - " << ns << std::endl;
+                  aof->StartNamespaceRecovery([this](uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
+                     auto& inmem = dynamic_cast<Inmem&>(*this);
+                     inmem.replayOperation(namespace_id, type, key, key_length, value, value_length);
+                  }, ns);
+               }
+            }
+            
+            std::cout << "Recovery completed...." << std::endl;
          }
       } catch (const std::exception& e) {
          throw std::runtime_error("Failed to initialize AOF for inmem store " + std::to_string(dtid) + ": " + e.what());

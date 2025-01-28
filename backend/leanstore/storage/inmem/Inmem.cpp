@@ -22,12 +22,6 @@ void Inmem::logOperation(uint64_t namespace_id, WALRecordType type, const std::v
    if (config.enable_wal && aof) {
       // Prepare WAL entry data with type
       std::vector<u8> wal_data = serialize_for_log(type, data);
-      // Verify serialization/deserialization consist ency
-      // auto [deserialized_type, deserialized_data] = deserialize_from_log(wal_data);
-
-      // if (deserialized_type != type || deserialized_data != data) {
-      //     throw std::runtime_error("Serialization/deserialization mismatch");
-      // }
       aof->LogCommand(namespace_id, wal_data);
    }
 }
@@ -177,20 +171,6 @@ OP_RESULT Inmem::scanDesc(u8* start_key, u16 key_length, std::function<bool(cons
 
 OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
 {
-   std::cout << "Inserting: " << std::endl;
-   std::cout << "Key length: " << key_length << std::endl;
-   std::cout << "Key bytes: ";
-   for (u16 i = 0; i < key_length; i++) {
-      std::cout << static_cast<int>(key[i]) << " ";
-   }
-   std::cout << std::endl;
-   std::cout << "Value length: " << value_length << std::endl; 
-   std::cout << "Value bytes: ";
-   for (u16 i = 0; i < value_length; i++) {
-      std::cout << static_cast<int>(value[i]) << " ";
-   }
-   std::cout << "\n------------------\n";
-   std::cout << std::endl;
    cr::activeTX().markAsWrite();
    if (config.enable_wal) {
       cr::Worker::my().logging.walEnsureEnoughSpace(PAGE_SIZE * 1);
@@ -199,7 +179,6 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       // Log the insert operation with both key and value
 
       if(namespace_id != 9999) {
-         std::cout << "has been here mate \n";
          std::vector<u8> log_data = serialize_for_wal(key, key_length, value, value_length);
          logOperation(namespace_id, WALRecordType::INSERT, log_data);
       }
@@ -340,7 +319,3 @@ u64 Inmem::getHeight() {
 }  // namespace storage
 }  // namespace leanstore
 
-
-// auto& active_tx_ns = cr::activeTX().getNamespace();
-// std::string namespace_id = to_string(active_tx_ns);
-// // wal_manager.writeMemWALEntry(namespace_id);

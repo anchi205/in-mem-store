@@ -47,6 +47,7 @@ void loadNamespace(u64 ns_id)
 
    for (Integer i = 0; i < FLAGS_entries_per_namespace; i++) {
       Integer key = (ns_id * FLAGS_entries_per_namespace) + i;
+      // Integer value = rnd(100000 );
       Integer value = 1000+key;
       u64 entry_checksum = calculateChecksum(key, value, ns_id);
       namespace_checksum ^= entry_checksum;
@@ -58,7 +59,6 @@ void loadNamespace(u64 ns_id)
          ns_id  // Specific namespace ID
       );
       try {
-         std::cout << "keys going from here: key - " << key << " , value - " << value << std::endl;
          kv_table.insert({key}, {value, ns_id});
          entry_checksums.push_back({key, entry_checksum});
          successful_inserts++;
@@ -103,11 +103,6 @@ void loadNamespace(u64 ns_id)
    
    std::cout << "Namespace ID : " << ns_id << ", ";
    std::cout << "Namespace checksum - " << namespace_checksum << std::endl;
-   // std::cout << "  - Successful inserts: " << successful_inserts << "/" << FLAGS_entries_per_namespace << std::endl;
-   // std::cout << "  - Verification status: " << (verify_success ? "PASSED" : "FAILED") << std::endl;
-   // if (!verify_success || namespace_checksum != verify_checksum) {
-   //    std::cout << "  - WARNING: Data verification failed!" << std::endl;
-   // }
 }
 
 void loadData()

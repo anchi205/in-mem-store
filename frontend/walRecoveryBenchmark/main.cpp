@@ -44,23 +44,11 @@ void readDB(LeanStore& db, const std::string& program_name)
       auto& crm = db.getCRManager();
       crm.scheduleJobSync(0, checkForReads);
       crm.joinAll();
-      std::cout << "\n=== Initial Data Load Complete ===\n";
-      std::cout << "Total entries: " << total_entries << "\n";
       std::cout << "To run recovery benchmark, rerun with --recover flag\n";
       std::cout << "Example: " << program_name << " --recover --ssd_path=./leanstore_ssd_file --worker_threads=6 --entries_per_namespace=10000 --num_namespaces=5\n";
       db.getBufferManager().writeAllBufferFrames();
    }
 }
-
-// void runRecoveryBenchmark(LeanStore& db)
-// {
-//    if (true) {
-//       auto& crm = db.getCRManager();
-//       crm.scheduleJobSync(0, runRecovery);
-//       crm.joinAll();
-//       db.getBufferManager().writeAllBufferFrames();
-//    }
-// }
 
 bool verifyDB(LeanStore& db) {
    // Define a unique key and value for verification
@@ -107,18 +95,9 @@ int main(int argc, char** argv)
       setup(db); 
       if (!verifyDB(db)) {
          std::cerr << "Database connection failed to establish!" << std::endl;
-         return 1;
       }
-
-
-      // if (true) {
-      //    std::cout << "\n=== Starting Recovery Benchmark ===\n";
-      // } else {
-      //    std::cout << "\n=== Starting Initial Data Load ===\n";
-      // }
       
-      // readDB(db, program_name);
-      // runRecoveryBenchmark(db);
+      readDB(db, program_name);
       
    }
    std::cout << "Benchmark completed. Exiting..." << std::endl;
