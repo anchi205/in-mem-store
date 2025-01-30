@@ -5,6 +5,7 @@
 #include "gflags/gflags.h"
 // -------------------------------------------------------------------------------------
 #include <signal.h>
+#include <iomanip> 
 // -------------------------------------------------------------------------------------
 using namespace std;
 using namespace leanstore::storage;
@@ -32,7 +33,7 @@ void Inmem::replayOperation(uint64_t namespace_id, WALRecordType type, const u8*
         TX_MODE::OLTP,
         TX_ISOLATION_LEVEL::SNAPSHOT_ISOLATION,
         false,  // not read-only
-        9999  // pass the namespace_id
+        1009  // pass the namespace_id
     );
 
     try {
@@ -42,7 +43,7 @@ void Inmem::replayOperation(uint64_t namespace_id, WALRecordType type, const u8*
                 std::vector<u8> value_copy(value, value + value_length);
                 auto result = insert(key_copy.data(), key_length, value_copy.data(), value_length);
                 if (result != OP_RESULT::OK) {
-                    std::cout << "Insert failed during replay because ok" << std::endl;
+                    std::cout << "Insert failed during replay because status not OP_RESULT::OK" << std::endl;
                     cr::Worker::my().abortTX();
                     return;
                 }
@@ -178,7 +179,7 @@ OP_RESULT Inmem::insert(u8* key, u16 key_length, u8* value, u16 value_length)
       uint64_t namespace_id = active_tx_ns;
       // Log the insert operation with both key and value
 
-      if(namespace_id != 9999) {
+      if(namespace_id != 1009) {
          std::vector<u8> log_data = serialize_for_wal(key, key_length, value, value_length);
          logOperation(namespace_id, WALRecordType::INSERT, log_data);
       }

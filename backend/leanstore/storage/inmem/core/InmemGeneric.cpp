@@ -12,7 +12,7 @@
 
 // Usage in code
 std::vector<uint64_t> parseNamespacesToRecover() {
-    std::vector<uint64_t> numbers;
+    std::vector<uint64_t> numbers{99};
     std::string str = FLAGS_recover_namespaces;
     std::stringstream ss(str);
     std::string number;
@@ -57,13 +57,13 @@ void InmemGeneric::create(DTID dtid, Config config)
                });
             } else {
                auto namespaces = parseNamespacesToRecover();
-               for (const auto& ns : namespaces) {
-                  std::cout << "Reccovering namespace - " << ns << std::endl;
-                  aof->StartNamespaceRecovery([this](uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
-                     auto& inmem = dynamic_cast<Inmem&>(*this);
-                     inmem.replayOperation(namespace_id, type, key, key_length, value, value_length);
-                  }, ns);
-               }
+               std::cout << "Recovering the following namespaces - ";
+               for(auto ns : namespaces) std::cout << ns << ", ";
+               std::cout << std::endl;
+               aof->StartNamespacesRecovery([this](uint64_t namespace_id, WALRecordType type, const u8* key, u16 key_length, const u8* value, u16 value_length) {
+                  auto& inmem = dynamic_cast<Inmem&>(*this);
+                  inmem.replayOperation(namespace_id, type, key, key_length, value, value_length);
+               }, namespaces);
             }
             
             auto recovery_end = std::chrono::high_resolution_clock::now();

@@ -117,3 +117,8 @@ DECLARE_string(persist_file);
 DECLARE_string(recover_file);
 DECLARE_string(recover_namespaces);
 DECLARE_bool(recover_all);
+DECLARE_uint64(pgc_variant);
+DECLARE_uint64(pgc_variant);
+// -------------------------------------------------------------------------------------
+DECLARE_int64(verify_key);
+DECLARE_int64(verify_value);

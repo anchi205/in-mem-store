@@ -193,7 +193,7 @@ void AOF::deleteSegmentPeriodically() {
     }
 }
 
-bool AOF::StartNamespaceRecovery(const ReplayCallback& callback, u64 ns_id) {
+bool AOF::StartNamespacesRecovery(const ReplayCallback& callback, std::vector<u64> namespaces) {
     auto segments = GetSegmentFiles();
     if (segments.empty()) {
         return true;  // No segments to recover from
@@ -255,8 +255,11 @@ bool AOF::StartNamespaceRecovery(const ReplayCallback& callback, u64 ns_id) {
             lastSequenceNo = std::max(lastSequenceNo, entry.SequenceNo);
             namespaceLastSeqNo[entry.NamespaceId] = entry.SequenceNo;
 
+            bool check = false;
+            if(count(namespaces.begin(), namespaces.end(), entry.NamespaceId) > 0) check = true;
+
             // Call the callback with raw pointers and lengths
-            if (callback && !key.empty() && (entry.NamespaceId == ns_id || entry.NamespaceId == 99)) {
+            if (callback && !key.empty() && check) {
                 callback(
                     entry.NamespaceId,
                     type,

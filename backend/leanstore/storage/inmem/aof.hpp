@@ -71,7 +71,7 @@ public:
 
     // Recovery methods
     bool StartRecovery(const ReplayCallback& callback);
-    bool StartNamespaceRecovery(const ReplayCallback& callback, u64 ns_id);
+    bool StartNamespacesRecovery(const ReplayCallback& callback, std::vector<u64> ns_id);
     uint64_t GetLastSequenceNumber() const { return lastSequenceNo; }
     std::vector<uint64_t> GetNamespaces() const;
     bool ReplayNamespace(uint64_t namespace_id, const ReplayCallback& callback);
