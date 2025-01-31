@@ -30,6 +30,18 @@ add_executable(min minimalExample/main.cpp)
 target_link_libraries(min leanstore Threads::Threads)
 target_include_directories(min PRIVATE ${SHARED_INCLUDE_DIRECTORY})
 
+add_executable(recovery_benchmark recoveryBenchmark/main.cpp)
+target_link_libraries(recovery_benchmark leanstore Threads::Threads)
+target_include_directories(recovery_benchmark PRIVATE ${SHARED_INCLUDE_DIRECTORY})
+
+add_executable(wal_recovery_benchmark walRecoveryBenchmark/main.cpp)
+target_link_libraries(wal_recovery_benchmark leanstore Threads::Threads)
+target_include_directories(wal_recovery_benchmark PRIVATE ${SHARED_INCLUDE_DIRECTORY})
+
+# add_executable(namespace_recovery namespaceRecovery/main.cpp)
+# target_link_libraries(namespace_recovery leanstore Threads::Threads)
+# target_include_directories(namespace_recovery PRIVATE ${SHARED_INCLUDE_DIRECTORY})
+
 add_executable(rocksdb_tpcc tpc-c/rocksdb_tpcc.cpp shared/rocksdb.cpp)
 target_link_libraries(rocksdb_tpcc leanstore rocksdb Threads::Threads dl z libbz2.a lz4 snappy zstd uring)
 target_include_directories(rocksdb_tpcc PRIVATE ${SHARED_INCLUDE_DIRECTORY})
@@ -58,4 +70,4 @@ target_include_directories(lmdb_tpcc PRIVATE ${SHARED_INCLUDE_DIRECTORY})
 add_executable(lmdb_ycsb ycsb/lmdb_ycsb.cpp)
 target_link_libraries(lmdb_ycsb leanstore lmdb Threads::Threads)
 target_include_directories(lmdb_ycsb PRIVATE ${SHARED_INCLUDE_DIRECTORY})
-# sudo apt-get install liblmdb-dev
+# # sudo apt-get install liblmdb-dev

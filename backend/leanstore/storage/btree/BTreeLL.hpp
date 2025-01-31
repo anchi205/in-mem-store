@@ -20,6 +20,7 @@ namespace btree
 // -------------------------------------------------------------------------------------
 class BTreeLL : public KVInterface, public BTreeGeneric
 {
+  // ************************* NEEDS TO BE PORTED *************************
   public:
    struct WALBeforeAfterImage : WALEntry {
       u16 image_size;
@@ -47,6 +48,7 @@ class BTreeLL : public KVInterface, public BTreeGeneric
    // -------------------------------------------------------------------------------------
    BTreeLL() = default;
    // -------------------------------------------------------------------------------------
+   // ************************* NEEDS TO BE PORTED *************************
    virtual OP_RESULT lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) override;
    virtual OP_RESULT insert(u8* key, u16 key_length, u8* value, u16 value_length) override;
    virtual OP_RESULT updateSameSizeInPlace(u8* key,
@@ -67,6 +69,7 @@ class BTreeLL : public KVInterface, public BTreeGeneric
    virtual OP_RESULT prefixLookupForPrev(u8* key, u16 key_length, std::function<void(const u8*, u16, const u8*, u16)> payload_callback) override;
    virtual OP_RESULT append(std::function<void(u8*)>, u16, std::function<void(u8*)>, u16, std::unique_ptr<u8[]>&) override;
    virtual OP_RESULT rangeRemove(u8* start_key, u16 start_key_length, u8* end_key, u16 end_key_length, bool page_used) override;
+   // ************************* NEEDS TO BE PORTED END *************************
    // -------------------------------------------------------------------------------------
    bool isRangeSurelyEmpty(Slice start_key, Slice end_key);
    // -------------------------------------------------------------------------------------

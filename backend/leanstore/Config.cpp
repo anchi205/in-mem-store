@@ -121,3 +121,8 @@ DEFINE_bool(persist, false, "");
 DEFINE_bool(recover, false, "");
 DEFINE_string(persist_file, "./leanstore.json", "Where should the persist config be saved to?");
 DEFINE_string(recover_file, "./leanstore.json", "Where should the recover config be loaded from?");
+DEFINE_string(recover_namespaces, "", "Namespaces to recover");
+DEFINE_bool(recover_all, false, "");
+// -------------------------------------------------------------------------------------
+DEFINE_int64(verify_key, 72345, "Key used for verification");
+DEFINE_int64(verify_value, 42070, "Value used for verification");
